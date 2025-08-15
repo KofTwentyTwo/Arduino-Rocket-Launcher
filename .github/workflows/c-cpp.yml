@@ -211,6 +211,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [version, build-simulation, build-hardware]
     if: ${{ needs.version.outputs.is-release == 'true' }}
+    outputs:
+      tag: ${{ needs.version.outputs.tag }}
+      upload_url: ${{ steps.release_info.outputs.upload_url }}
+      release_id: ${{ steps.release_info.outputs.release_id }}
+      html_url: ${{ steps.release_info.outputs.html_url }}
     
     steps:
     - name: Checkout code
@@ -246,6 +251,7 @@ jobs:
         echo "Tag ${{ needs.version.outputs.tag }} already exists, continuing with release process"
         
     - name: Create GitHub Release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -275,6 +281,13 @@ jobs:
           - **Commit**: ${{ github.sha }}
         draft: false
         prerelease: false
+        
+    - name: Get Release Info
+      id: release_info
+      run: |
+        echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
+        echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
+        echo "html_url=${{ steps.create_release.outputs.html_url }}" >> $GITHUB_OUTPUT
 
   create-release:
     name: Create Release Assets
@@ -339,9 +352,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./lukes-rocket-launcher-firmware-v${{ github.event.release.tag_name }}.zip
-        asset_name: lukes-rocket-launcher-firmware-v${{ github.event.release.tag_name }}.zip
+        upload_url: ${{ needs.create-tag.outputs.upload_url }}
+        asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.create-tag.outputs.tag }}.zip
+        asset_name: lukes-rocket-launcher-firmware-v${{ needs.create-tag.outputs.tag }}.zip
         asset_content_type: application/zip
 
   build-status:
@@ -484,7 +497,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ needs.create-tag.outputs.upload_url }}
         asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.tar.gz
         asset_name: lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.tar.gz
         asset_content_type: application/gzip
@@ -494,7 +507,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ needs.create-tag.outputs.upload_url }}
         asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
         asset_name: lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
         asset_content_type: application/zip
