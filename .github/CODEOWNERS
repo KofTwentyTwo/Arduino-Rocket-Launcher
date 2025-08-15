@@ -1,0 +1,16 @@
+# Core firmware
+/src/ @KofTwentyTwo
+/include/ @KofTwentyTwo
+/test/ @KofTwentyTwo
+/platformio.ini @KofTwentyTwo
+
+# Build system
+/CMakeLists.txt @KofTwentyTwo
+/CMakePresets.json @KofTwentyTwo
+
+# Documentation
+/README.md @KofTwentyTwo
+/docs/ @KofTwentyTwo
+
+# GitHub Actions
+/.github/ @KofTwentyTwo
