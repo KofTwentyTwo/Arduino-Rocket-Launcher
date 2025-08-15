@@ -29,10 +29,21 @@ echo ""
 echo "🔒 Setting up MAIN branch protection..."
 gh api repos/$REPO/branches/main/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["Build and Test Arduino Firmware"]}' \
-  --field enforce_admins=true \
-  --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":false}' \
-  --field restrictions=null
+  --input - << EOF
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["Build and Test Arduino Firmware"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false
+  },
+  "restrictions": null
+}
+EOF
 
 if [ $? -eq 0 ]; then
     echo "✅ MAIN branch protection configured"
@@ -46,10 +57,21 @@ echo ""
 echo "🔒 Setting up DEVELOP branch protection..."
 gh api repos/$REPO/branches/develop/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["Build and Test Arduino Firmware"]}' \
-  --field enforce_admins=false \
-  --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":false}' \
-  --field restrictions=null
+  --input - << EOF
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["Build and Test Arduino Firmware"]
+  },
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false
+  },
+  "restrictions": null
+}
+EOF
 
 if [ $? -eq 0 ]; then
     echo "✅ DEVELOP branch protection configured"
