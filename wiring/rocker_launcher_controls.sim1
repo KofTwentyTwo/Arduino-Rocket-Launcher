@@ -28,11 +28,11 @@
 
 <item itemtype="Resistor" CircId="Resistor-52" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-272,92" rotation="0" hflip="1" vflip="1" label="Resistor-52" idLabPos="-16,-24" labelrot="0" valLabPos="-9.28059,-17.6229" valLabRot="0" Resistance="50 Ω" />
 
-<item itemtype="BJT" CircId="BJT-56" mainComp="false" Show_id="true" Show_Val="false" Pos="-316,140" rotation="0" hflip="-1" vflip="-1" label="IGNITER" idLabPos="121.736,-59.825" labelrot="0" valLabPos="-16,20" valLabRot="0" PNP="false" Gain="100" Vcrit="0.670736 V" />
+<item itemtype="BJT" CircId="BJT-56" mainComp="false" Show_id="true" Show_Val="false" Pos="-316,148" rotation="0" hflip="-1" vflip="-1" label="IGNITER" idLabPos="121.736,-59.825" labelrot="0" valLabPos="-16,20" valLabRot="0" PNP="false" Gain="100" Vcrit="0.670736 V" />
 
-<item itemtype="Resistor" CircId="Resistor-57" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-236,140" rotation="0" hflip="1" vflip="1" label="Resistor-57" idLabPos="-16,-24" labelrot="0" valLabPos="-9.28059,-17.6229" valLabRot="0" Resistance="1 kΩ" />
+<item itemtype="Resistor" CircId="Resistor-57" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-228,148" rotation="0" hflip="-1" vflip="1" label="Resistor-57" idLabPos="-16,-24" labelrot="0" valLabPos="-9.28059,-17.6229" valLabRot="0" Resistance="1 kΩ" />
 
-<item itemtype="Resistor" CircId="Resistor-75" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-280,116" rotation="0" hflip="1" vflip="1" label="Resistor-75" idLabPos="-16,-24" labelrot="0" valLabPos="-9.28059,-17.6229" valLabRot="0" Resistance="10 kΩ" />
+<item itemtype="Resistor" CircId="Resistor-75" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-272,116" rotation="0" hflip="1" vflip="1" label="Resistor-75" idLabPos="-16,-24" labelrot="0" valLabPos="-9.28059,-17.6229" valLabRot="0" Resistance="10 kΩ" />
 
 <item itemtype="RelaySPST" CircId="RelaySPST-95" mainComp="false" Show_id="false" Show_Val="false" Pos="-276,196" rotation="0" hflip="1" vflip="-1" label="RelaySPST-95" idLabPos="-16,8" labelrot="0" valLabPos="-16,6" valLabRot="0" Norm_Close="false" DT="false" Poles="1" IOn="20 mA" IOff="10 mA" Inductance="100 mH" Rcoil="100 Ω" ReaStep="0 ns" />
 
@@ -56,7 +56,7 @@
 
 <item itemtype="Node" CircId="Node-76" mainComp="false" Pos="-348,116" />
 
-<item itemtype="Node" CircId="Node-77" mainComp="false" Pos="-264,140" />
+<item itemtype="Node" CircId="Node-77" mainComp="false" Pos="-256,148" />
 
 <item itemtype="Node" CircId="Node-105" mainComp="false" Pos="-244,196" />
 
@@ -104,19 +104,17 @@
 
 <item itemtype="Connector" uid="Connector-190" startpinid="Resistor-52-rPin" endpinid="Uno-1-7" pointList="-256,92,-220,92,-220,-92,-172,-92" />
 
-<item itemtype="Connector" uid="Connector-199" startpinid="Resistor-57-lPin" endpinid="Uno-1-8" pointList="-252,140,-212,140,-212,-76,-172,-76" />
+<item itemtype="Connector" uid="Connector-199" startpinid="Resistor-57-lPin" endpinid="Uno-1-8" pointList="-212,148,-212,-76,-172,-76" />
 
 <item itemtype="Connector" uid="Connector-209" startpinid="Led-51-rPin" endpinid="Node-60-0" pointList="-328,92,-348,92" />
 
 <item itemtype="Connector" uid="Connector-210" startpinid="Node-60-2" endpinid="Node-53-1" pointList="-348,92,-348,52" />
 
-<item itemtype="Connector" uid="Connector-243" startpinid="Resistor-75-lPin" endpinid="Node-76-1" pointList="-296,116,-348,116" />
+<item itemtype="Connector" uid="Connector-243" startpinid="Resistor-75-lPin" endpinid="Node-76-1" pointList="-288,116,-348,116" />
 
-<item itemtype="Connector" uid="Connector-246" startpinid="Resistor-75-rPin" endpinid="Node-77-1" pointList="-264,116,-264,140" />
+<item itemtype="Connector" uid="Connector-246" startpinid="Resistor-75-rPin" endpinid="Node-77-1" pointList="-256,116,-256,148" />
 
-<item itemtype="Connector" uid="Connector-247" startpinid="BJT-56-base" endpinid="Node-77-0" pointList="-300,140,-264,140" />
-
-<item itemtype="Connector" uid="Connector-248" startpinid="Node-77-2" endpinid="Resistor-57-rPin" pointList="-264,140,-220,140" />
+<item itemtype="Connector" uid="Connector-247" startpinid="BJT-56-base" endpinid="Node-77-0" pointList="-300,148,-256,148" />
 
 <item itemtype="Connector" uid="Connector-245" startpinid="Node-76-2" endpinid="Node-60-1" pointList="-348,116,-348,92" />
 
@@ -132,11 +130,11 @@
 
 <item itemtype="Connector" uid="Connector-322" startpinid="RelaySPST-95-inductor-lPin" endpinid="Node-106-0" pointList="-292,196,-308,196" />
 
-<item itemtype="Connector" uid="Connector-323" startpinid="Node-106-2" endpinid="BJT-56-collector" pointList="-308,196,-324,196,-324,156" />
+<item itemtype="Connector" uid="Connector-323" startpinid="Node-106-2" endpinid="BJT-56-collector" pointList="-308,196,-324,196,-324,164" />
 
 <item itemtype="Connector" uid="Connector-325" startpinid="Lamp-103-lPin" endpinid="Node-107-1" pointList="-472,212,-492,212,-492,124,-348,124" />
 
-<item itemtype="Connector" uid="Connector-326" startpinid="BJT-56-emiter" endpinid="Node-107-0" pointList="-324,124,-348,124" />
+<item itemtype="Connector" uid="Connector-326" startpinid="BJT-56-emiter" endpinid="Node-107-0" pointList="-324,132,-348,132,-348,124" />
 
 <item itemtype="Connector" uid="Connector-327" startpinid="Node-107-2" endpinid="Node-76-0" pointList="-348,124,-348,116" />
 
@@ -165,5 +163,7 @@
 <item itemtype="Connector" uid="Connector-343" startpinid="AudioOut-39-rPin" endpinid="Node-109-0" pointList="-220,-220,-212,-220,-212,-148,-348,-148" />
 
 <item itemtype="Connector" uid="Connector-344" startpinid="Node-109-2" endpinid="Node-108-1" pointList="-348,-148,-348,-132" />
+
+<item itemtype="Connector" uid="Connector-248" startpinid="Node-77-2" endpinid="Resistor-57-rPin" pointList="-256,148,-244,148" />
 
 </circuit>
