@@ -1,0 +1,309 @@
+name: Build and Test Arduino Firmware
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'code/RocketLauncher/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'code/RocketLauncher/**'
+  release:
+    types: [ published, created ]
+
+env:
+  PLATFORMIO_VERSION: 6.1.7
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Run Unit Tests
+      working-directory: ./code/RocketLauncher
+      run: |
+        pio test -e native
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: ./code/RocketLauncher/.pio/test/native/
+        retention-days: 30
+
+  build-simulation:
+    name: Build Simulation Firmware
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Build Simulation Firmware
+      working-directory: ./code/RocketLauncher
+      run: |
+        pio run -e simulide
+        
+    - name: Create output directory
+      run: mkdir -p ./code/RocketLauncher/out/simulide
+      
+    - name: Copy firmware files
+      working-directory: ./code/RocketLauncher
+      run: |
+        cp .pio/build/simulide/firmware.hex out/simulide/
+        cp .pio/build/simulide/firmware.elf out/simulide/
+        
+    - name: Upload simulation firmware
+      uses: actions/upload-artifact@v3
+      with:
+        name: simulation-firmware
+        path: |
+          ./code/RocketLauncher/out/simulide/firmware.hex
+          ./code/RocketLauncher/out/simulide/firmware.elf
+        retention-days: 90
+
+  build-hardware:
+    name: Build Hardware Firmware
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Build Hardware Firmware
+      working-directory: ./code/RocketLauncher
+      run: |
+        pio run -e uno_hw
+        
+    - name: Upload hardware firmware
+      uses: actions/upload-artifact@v3
+      with:
+        name: hardware-firmware
+        path: |
+          ./code/RocketLauncher/.pio/build/uno_hw/firmware.hex
+          ./code/RocketLauncher/.pio/build/uno_hw/firmware.elf
+        retention-days: 90
+
+  build-all-platforms:
+    name: Build All Platforms
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Build All Environments
+      working-directory: ./code/RocketLauncher
+      run: |
+        pio run
+        
+    - name: Upload all firmware
+      uses: actions/upload-artifact@v3
+      with:
+        name: all-firmware-${{ matrix.os }}
+        path: |
+          ./code/RocketLauncher/.pio/build/*/firmware.hex
+          ./code/RocketLauncher/.pio/build/*/firmware.elf
+        retention-days: 90
+
+  create-release:
+    name: Create Release Assets
+    runs-on: ubuntu-latest
+    needs: [build-simulation, build-hardware]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+        
+    - name: Create release package
+      run: |
+        mkdir -p release
+        cp -r artifacts/simulation-firmware/* release/
+        cp -r artifacts/hardware-firmware/* release/
+        
+        # Create a README for the release
+        cat > release/README.md << 'EOF'
+        # Luke's Rocket Launcher Firmware Release
+        
+        ## Firmware Files
+        
+        ### Simulation (SimulIDE)
+        - `firmware.hex` - Hex file for SimulIDE simulation
+        - `firmware.elf` - ELF file for debugging
+        
+        ### Hardware (Arduino UNO)
+        - `firmware.hex` - Hex file for Arduino upload
+        - `firmware.elf` - ELF file for debugging
+        
+        ## Installation
+        
+        ### For Simulation
+        1. Open SimulIDE
+        2. Load `wiring/rocker_launcher_controls.sim1`
+        3. The firmware will auto-load from the hex file
+        
+        ### For Hardware
+        1. Use Arduino IDE or PlatformIO to upload `firmware.hex`
+        2. Or use `make upload` from the project directory
+        
+        ## Build Information
+        - Built on: ${{ github.event.release.created_at }}
+        - Commit: ${{ github.sha }}
+        - Platform: ${{ runner.os }}
+        EOF
+        
+    - name: Create release zip
+      run: |
+        cd release
+        zip -r ../lukes-rocket-launcher-firmware-v${{ github.event.release.tag_name }}.zip .
+        cd ..
+        
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./lukes-rocket-launcher-firmware-v${{ github.event.release.tag_name }}.zip
+        asset_name: lukes-rocket-launcher-firmware-v${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip
+
+  build-status:
+    name: Build Status Report
+    runs-on: ubuntu-latest
+    needs: [test, build-simulation, build-hardware]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Generate build report
+      run: |
+        echo "## 🚀 Build Status Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build completed at:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.test.result }}" == "success" ]; then
+          echo "✅ **Tests:** PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Tests:** FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.build-simulation.result }}" == "success" ]; then
+          echo "✅ **Simulation Build:** SUCCESS" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Simulation Build:** FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.build-hardware.result }}" == "success" ]; then
+          echo "✅ **Hardware Build:** SUCCESS" >> $GITHUB_SUMMARY
+        else
+          echo "❌ **Hardware Build:** FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Firmware files are available as artifacts above.**" >> $GITHUB_STEP_SUMMARY

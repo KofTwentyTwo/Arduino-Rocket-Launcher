@@ -1,5 +1,10 @@
 # 🚀 Luke's Rocket Launch Controller
 
+[![Build Status](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/workflows/Build%20and%20Test%20Arduino%20Firmware/badge.svg)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
+[![Tests](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/workflows/Build%20and%20Test%20Arduino%20Firmware/badge.svg?branch=main&event=push)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
+[![PlatformIO](https://img.shields.io/badge/PlatformIO-6.1.7-blue.svg)](https://platformio.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Luke's totally awesome, over engineered, completely silly, and ridiculous** Arduino-based model rocket launch controller designed for maximum fun, safety, reliability, and pure rocket-launching joy! This project combines simple electronics with some safety features to create a launch system suitable for both educational and recreational rocketry. 
 
 **To be clear** - this is for a nerdy 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
@@ -25,6 +30,21 @@ make build-only
 # ❓ See all available commands
 make help
 ```
+
+## 🚀 **Automated Builds & Releases**
+
+**Every push to main automatically builds and tests your firmware!** 
+
+- **🧪 Automated Testing**: Unit tests run on every commit
+- **🔧 Multi-Platform Builds**: Firmware built for Ubuntu, Windows, and macOS
+- **📦 Downloadable Releases**: Pre-built firmware files available as GitHub artifacts
+- **🎯 Release Automation**: Create GitHub releases to automatically package firmware
+
+**Get the latest firmware without building:**
+1. Go to [Actions](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
+2. Click on the latest successful workflow run
+3. Download the firmware artifacts
+4. Upload to your Arduino or use in SimulIDE!
 
 ![Rocket Launch Controller Circuit](docs/screen-1.png)
 
@@ -313,7 +333,9 @@ The project now follows industry best practices:
 - **Automated Testing**: Every build runs comprehensive tests
 - **Code Quality**: Enforced with `.clang-format` and `.clang-tidy`
 - **Build Automation**: Professional Makefile with multiple targets
-- **Continuous Integration Ready**: Easy to integrate with CI/CD systems
+- **Continuous Integration**: GitHub Actions automatically build and test on every push
+- **Multi-Platform Support**: Builds run on Ubuntu, Windows, and macOS
+- **Release Automation**: GitHub releases automatically package firmware files
 
 ### **Code Quality Standards** ✨
 - **Formatting**: 3-space indentation, Allman braces, 100-char line limit

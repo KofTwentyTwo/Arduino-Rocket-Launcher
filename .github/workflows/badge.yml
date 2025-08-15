@@ -1,0 +1,21 @@
+name: Generate Build Badges
+
+on:
+  workflow_run:
+    workflows: ["Build and Test Arduino Firmware"]
+    types: [completed]
+
+jobs:
+  generate-badges:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion != 'skipped' }}
+    
+    steps:
+    - name: Generate Badge
+      run: |
+        # Generate a simple build status badge
+        if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+          echo "✅ Build Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Build Status: FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
