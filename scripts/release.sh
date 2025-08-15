@@ -43,8 +43,8 @@ show_usage() {
     echo "  -h, --help               Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 --type minor                    # Auto-increment minor version"
-    echo "  $0 --version 1.0.0                # Release specific version"
+    echo "  $0 --type minor          # Auto-increment minor version"
+    echo "  $0 --version 1.0.0       # Release specific version"
     echo "  $0 --type patch --message 'Bug fix release'"
     echo "  $0 --version 0.1.0 --pre-release # Create pre-release"
     echo "  $0 --version 1.0.0 --watch       # Create release and watch progress"
@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            print_error "Unknown option: $1"
+            echo "Unknown option: $1"
             show_usage
             exit 1
             ;;
@@ -170,6 +170,7 @@ fi
 echo "2. Push tag to remote"
 echo "3. Trigger GitHub Actions release workflow"
 echo "4. Create GitHub release with firmware files"
+echo "5. Package firmware files for download"
 
 if [[ "$DRY_RUN" == true ]]; then
     print_status "DRY RUN - No changes will be made"
