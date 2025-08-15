@@ -39,6 +39,7 @@ show_usage() {
     echo "  -m, --message MESSAGE    Custom release message"
     echo "  -p, --pre-release        Mark as pre-release (alpha/beta/rc)"
     echo "  -d, --dry-run            Show what would be done without doing it"
+    echo "  -w, --watch              Watch the release workflow progress"
     echo "  -h, --help               Show this help message"
     echo ""
     echo "Examples:"
@@ -46,6 +47,7 @@ show_usage() {
     echo "  $0 --version 1.0.0                # Release specific version"
     echo "  $0 --type patch --message 'Bug fix release'"
     echo "  $0 --version 0.1.0 --pre-release # Create pre-release"
+    echo "  $0 --version 1.0.0 --watch       # Create release and watch progress"
     echo ""
     echo "Conventional Commit Messages:"
     echo "  feat: new feature"
@@ -63,6 +65,7 @@ RELEASE_TYPE="patch"
 MESSAGE=""
 PRE_RELEASE=false
 DRY_RUN=false
+WATCH=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -84,6 +87,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -d|--dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        -w|--watch)
+            WATCH=true
             shift
             ;;
         -h|--help)
@@ -211,3 +218,35 @@ echo "  • Package firmware files for download"
 echo ""
 print_status "Monitor progress at: https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions"
 print_status "Download firmware at: https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/releases"
+
+# Watch workflow if requested
+if [[ "$WATCH" == true ]]; then
+    echo ""
+    print_status "Watching release workflow progress..."
+    print_status "Looking for workflow triggered by tag $NEW_TAG..."
+    
+    # Wait a moment for the workflow to start
+    sleep 3
+    
+    # Find the workflow run for this tag
+    WORKFLOW_RUN=$(gh run list --workflow="Build and Test Arduino Firmware" --limit 10 | grep "$NEW_TAG" | head -1 | awk '{print $NF}')
+    
+    if [[ -n "$WORKFLOW_RUN" ]]; then
+        print_status "Found workflow run: $WORKFLOW_RUN"
+        print_status "Starting workflow monitor..."
+        echo ""
+        
+        # Watch the workflow
+        gh run watch "$WORKFLOW_RUN"
+        
+        # Show final status
+        echo ""
+        print_status "Workflow completed! Final status:"
+        gh run view "$WORKFLOW_RUN" --json status,conclusion,url --jq '.status + " (" + .conclusion + ")"'
+        echo ""
+        print_status "View details at: $(gh run view "$WORKFLOW_RUN" --json url --jq '.url')"
+    else
+        print_warning "Could not find workflow run for tag $NEW_TAG"
+        print_status "You can manually check at: https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions"
+    fi
+fi
