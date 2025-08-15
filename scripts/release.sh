@@ -229,9 +229,8 @@ if [[ "$WATCH" == true ]]; then
     # Wait a moment for the workflow to start
     sleep 3
     
-    # Find the workflow run for this tag
-    # Format: STATUS CONCLUSION TITLE WORKFLOW BRANCH EVENT ID ELAPSED AGE
-    WORKFLOW_RUN=$(gh run list --workflow="Build and Test Arduino Firmware" --limit 10 | grep "$NEW_TAG" | head -1 | awk '{print $6}')
+    # Find the workflow run for this tag using JSON output for reliable parsing
+    WORKFLOW_RUN=$(gh run list --workflow="Build and Test Arduino Firmware" --limit 10 --json databaseId,headBranch | jq -r ".[] | select(.headBranch == \"$NEW_TAG\") | .databaseId" | head -1)
     
     if [[ -n "$WORKFLOW_RUN" ]]; then
         print_status "Found workflow run: $WORKFLOW_RUN"
