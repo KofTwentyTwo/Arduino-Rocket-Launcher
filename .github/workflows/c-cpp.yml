@@ -307,6 +307,7 @@ jobs:
         
     - name: Create GitHub Release
       id: create_release
+      if: steps.check-tag.outputs.exists != 'true'
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -339,12 +340,26 @@ jobs:
         draft: false
         prerelease: false
         
+    - name: Release already exists
+      if: steps.check-tag.outputs.exists == 'true'
+      run: |
+        echo "Release for tag ${{ needs.version.outputs.tag }} already exists, skipping creation"
+        echo "release_id=0" >> $GITHUB_OUTPUT
+        echo "upload_url=" >> $GITHUB_OUTPUT
+        echo "html_url=" >> $GITHUB_OUTPUT
+        
     - name: Get Release Info
       id: release_info
       run: |
-        echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
-        echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
-        echo "html_url=${{ steps.create_release.outputs.html_url }}" >> $GITHUB_OUTPUT
+        if [ "${{ steps.check-tag.outputs.exists }}" == "true" ]; then
+          echo "release_id=0" >> $GITHUB_OUTPUT
+          echo "upload_url=" >> $GITHUB_OUTPUT
+          echo "html_url=" >> $GITHUB_OUTPUT
+        else
+          echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
+          echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
+          echo "html_url=${{ steps.create_release.outputs.html_url }}" >> $GITHUB_OUTPUT
+        fi
 
   create-release:
     name: Create Release Assets
