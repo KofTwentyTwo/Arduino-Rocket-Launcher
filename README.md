@@ -7,7 +7,7 @@
 
 **Luke's totally awesome, over engineered, completely silly, and ridiculous** Arduino-based model rocket launch controller designed for maximum fun, safety, reliability, and pure rocket-launching joy! This project combines simple electronics with some safety features to create a launch system suitable for both educational and recreational rocketry. 
 
-**To be clear** - this is for a nerdy 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
+**To be clear** - this is for an awesome 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
 
 
 ![Rocket Launch Controller Circuit](docs/screen-1.png)
