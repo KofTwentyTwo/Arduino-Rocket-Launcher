@@ -67,10 +67,67 @@ jobs:
         echo "Is Release: ${{ steps.version.outputs.is-release }}"
         echo "Tag: ${{ steps.version.outputs.tag }}"
 
-  test:
-    name: Run Unit Tests
+  cmake-build:
+    name: CMake Build and Test
     runs-on: ubuntu-latest
     needs: version
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.13
+      with:
+        cmake-version: '3.20.0'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Configure CMake
+      working-directory: ./code/RocketLauncher
+      run: |
+        cmake --preset default
+        
+    - name: Build CMake Project
+      working-directory: ./code/RocketLauncher
+      run: |
+        cmake --build . --preset default
+        
+    - name: Run CMake Tests
+      working-directory: ./code/RocketLauncher
+      run: |
+        ctest --preset default --output-on-failure
+        
+    - name: Upload CMake test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: cmake-test-results
+        path: ./code/RocketLauncher/build/
+        retention-days: 30
+
+  test:
+    name: Run PlatformIO Unit Tests
+    runs-on: ubuntu-latest
+    needs: [version, cmake-build]
     
     steps:
     - name: Checkout code
@@ -96,23 +153,23 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pio-
           
-    - name: Run Unit Tests
+    - name: Run PlatformIO Unit Tests
       working-directory: ./code/RocketLauncher
       run: |
         pio test -e native
         
-    - name: Upload test results
+    - name: Upload PlatformIO test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results
+        name: platformio-test-results
         path: ./code/RocketLauncher/.pio/test/native/
         retention-days: 30
 
   build-simulation:
     name: Build Simulation Firmware
     runs-on: ubuntu-latest
-    needs: [version, test]
+    needs: [version, cmake-build, test]
     
     steps:
     - name: Checkout code
@@ -164,7 +221,7 @@ jobs:
   build-hardware:
     name: Build Hardware Firmware
     runs-on: ubuntu-latest
-    needs: [version, test]
+    needs: [version, cmake-build, test]
     
     steps:
     - name: Checkout code
@@ -203,8 +260,6 @@ jobs:
           ./code/RocketLauncher/.pio/build/uno_hw/firmware.hex
           ./code/RocketLauncher/.pio/build/uno_hw/firmware.elf
         retention-days: 90
-
-
 
   create-tag:
     name: Create Git Tag
@@ -262,9 +317,10 @@ jobs:
           ## 🚀 Luke's Rocket Launcher v${{ needs.version.outputs.version }}
           
           ### What's New
-          - Automated build and testing
+          - Automated build and testing with CMake
           - Pre-compiled firmware for Arduino and SimulIDE
           - Comprehensive unit test coverage
+          - Modern CMake build system for IDE integration
           
           ### Downloads
           - **Simulation Firmware**: For SimulIDE testing
@@ -279,6 +335,7 @@ jobs:
           - **Version**: ${{ needs.version.outputs.version }}
           - **Build Date**: ${{ github.event.head_commit.timestamp }}
           - **Commit**: ${{ github.sha }}
+          - **Build System**: CMake + PlatformIO
         draft: false
         prerelease: false
         
@@ -367,7 +424,7 @@ jobs:
         ### For Hardware
         1. Download the package
         2. Use Arduino IDE or PlatformIO to upload `firmware/hardware/firmware.hex`
-        3. Or use `make upload` from the project directory
+        3. Or use `./scripts/build.sh upload` from the project directory
         
         ### For Simulation
         1. Download the package
@@ -380,6 +437,7 @@ jobs:
         - **Built on**: ${{ github.event.head_commit.timestamp }}
         - **Commit**: ${{ github.sha }}
         - **Platform**: ${{ runner.os }}
+        - **Build System**: CMake + PlatformIO
         
         ## 📚 Documentation
         - [Project README](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher#readme)
@@ -406,7 +464,7 @@ jobs:
   build-status:
     name: Build Status Report
     runs-on: ubuntu-latest
-    needs: [test, build-simulation, build-hardware]
+    needs: [cmake-build, test, build-simulation, build-hardware]
     if: always()
     
     steps:
@@ -422,10 +480,16 @@ jobs:
         echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if [ "${{ needs.test.result }}" == "success" ]; then
-          echo "✅ **Tests:** PASSED" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.cmake-build.result }}" == "success" ]; then
+          echo "✅ **CMake Build:** SUCCESS" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ **Tests:** FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **CMake Build:** FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.test.result }}" == "success" ]; then
+          echo "✅ **PlatformIO Tests:** PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **PlatformIO Tests:** FAILED" >> $GITHUB_STEP_SUMMARY
         fi
         
         if [ "${{ needs.build-simulation.result }}" == "success" ]; then
@@ -441,6 +505,7 @@ jobs:
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build System:** CMake + PlatformIO" >> $GITHUB_STEP_SUMMARY
         echo "**Firmware files are available as artifacts above.**" >> $GITHUB_STEP_SUMMARY
 
   publish-package:
@@ -503,7 +568,9 @@ jobs:
             "launcher",
             "firmware",
             "simulide",
-            "3d-printing"
+            "3d-printing",
+            "cmake",
+            "platformio"
           ],
           "author": "KofTwentyTwo",
           "license": "MIT",
@@ -556,7 +623,7 @@ jobs:
         ### For Hardware
         1. Download the package
         2. Use Arduino IDE or PlatformIO to upload \`firmware/hardware/firmware.hex\`
-        3. Or use \`make upload\` from the project directory
+        3. Or use \`./scripts/build.sh upload\` from the project directory
         
         ### For Simulation
         1. Download the package
@@ -569,6 +636,7 @@ jobs:
         - **Built on**: ${{ github.event.head_commit.timestamp }}
         - **Commit**: ${{ github.sha }}
         - **Platform**: ${{ runner.os }}
+        - **Build System**: CMake + PlatformIO
         
         ## 📚 Documentation
         - [Project README](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher#readme)
