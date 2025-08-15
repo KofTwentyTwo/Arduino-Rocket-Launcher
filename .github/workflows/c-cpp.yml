@@ -279,7 +279,7 @@ jobs:
   create-release:
     name: Create Release Assets
     runs-on: ubuntu-latest
-    needs: [version, build-simulation, build-hardware]
+    needs: [version, build-simulation, build-hardware, create-tag]
     if: ${{ needs.version.outputs.is-release == 'true' }}
     
     steps:
@@ -387,7 +387,7 @@ jobs:
   publish-package:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
-    needs: [version, build-simulation, build-hardware]
+    needs: [version, build-simulation, build-hardware, create-tag]
     if: ${{ needs.version.outputs.is-release == 'true' }}
     
     steps:
