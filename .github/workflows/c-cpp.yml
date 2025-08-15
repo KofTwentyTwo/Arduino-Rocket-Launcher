@@ -364,16 +364,17 @@ jobs:
       id: release_info
       run: |
         if [[ "${{ steps.check_release.outputs.exists }}" == "true" ]]; then
-          # Use existing release info
+          # Use existing release info from check_release step
           echo "release_id=${{ steps.check_release.outputs.id }}" >> $GITHUB_OUTPUT
           echo "upload_url=${{ steps.check_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
           echo "html_url=${{ steps.check_release.outputs.html_url }}" >> $GITHUB_OUTPUT
           echo "Using existing GitHub release for tag ${{ needs.version.outputs.tag }}"
         else
-          # Use newly created release info
+          # Use newly created release info from create_release step
           echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
           echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
           echo "html_url=${{ steps.create_release.outputs.html_url }}" >> $GITHUB_OUTPUT
+          echo "Created new GitHub release for tag ${{ needs.version.outputs.tag }}"
         fi
 
   create-release:
