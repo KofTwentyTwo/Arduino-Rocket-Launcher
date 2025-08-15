@@ -121,6 +121,16 @@ format: ## Format source code with clang-format
 		echo "$(BLUE)   Ubuntu: sudo apt install clang-format$(NC)"; \
 	fi
 
+.PHONY: release
+release: ## Create a semantic versioned release
+	@echo "$(GREEN)🏷️  Creating semantic release...$(NC)"
+	@if [ -f "../../scripts/release.sh" ]; then \
+		../../scripts/release.sh; \
+	else \
+		echo "$(YELLOW)⚠️  Release script not found. Please run from project root:$(NC)"; \
+		echo "$(BLUE)   make release$(NC)"; \
+	fi
+
 # Status
 .PHONY: status
 status: ## Show project status

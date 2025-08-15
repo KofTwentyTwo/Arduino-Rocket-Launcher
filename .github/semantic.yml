@@ -1,0 +1,58 @@
+# Semantic Versioning Configuration
+# This file defines how versions are managed and incremented
+
+# Version increment rules
+rules:
+  # Major version: Breaking changes
+  major:
+    - "BREAKING CHANGE"
+    - "feat!:"
+    - "fix!:"
+    
+  # Minor version: New features
+  minor:
+    - "feat:"
+    - "feat(arduino):"
+    - "feat(testing):"
+    - "feat(build):"
+    
+  # Patch version: Bug fixes and improvements
+  patch:
+    - "fix:"
+    - "fix(arduino):"
+    - "fix(testing):"
+    - "fix(build):"
+    - "docs:"
+    - "style:"
+    - "refactor:"
+    - "perf:"
+    - "test:"
+    - "chore:"
+
+# Commit message format
+commit_format: "<type>(<scope>): <description>"
+
+# Types that trigger version bumps
+types:
+  - feat      # New feature
+  - fix       # Bug fix
+  - docs      # Documentation changes
+  - style     # Code style changes (formatting, etc.)
+  - refactor  # Code refactoring
+  - perf      # Performance improvements
+  - test      # Adding or updating tests
+  - chore     # Maintenance tasks
+
+# Scopes for this project
+scopes:
+  - arduino     # Arduino-specific changes
+  - testing     # Testing framework changes
+  - build       # Build system changes
+  - docs        # Documentation changes
+  - ci          # CI/CD changes
+
+# Release types
+release_types:
+  - major       # Breaking changes
+  - minor       # New features
+  - patch       # Bug fixes
