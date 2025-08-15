@@ -51,6 +51,7 @@ show_help() {
     echo "  build.sh firmware-sim # Build simulation firmware"
     echo "  build.sh firmware-hw  # Build hardware firmware"
     echo "  build.sh all-firmware # Build both firmwares"
+    echo "  build.sh sim          # Build and launch simulator"
     echo "  build.sh upload       # Upload to Arduino"
     echo "  build.sh monitor      # Start serial monitor"
     echo "  build.sh pio-clean    # Clean PlatformIO files"
@@ -64,6 +65,7 @@ show_help() {
     echo -e "${BLUE}Examples:${NC}"
     echo "  ./scripts/build.sh                    # Full build"
     echo "  ./scripts/build.sh firmware-sim       # Build simulation firmware"
+    echo "  ./scripts/build.sh sim                # Build and launch simulator"
     echo "  ./scripts/build.sh --preset release   # Release build"
 }
 
@@ -220,6 +222,115 @@ format_code() {
     fi
 }
 
+# Function to build and launch simulator
+launch_simulator() {
+    print_status "Building and launching simulator..."
+    
+    # Check if PlatformIO is available
+    if ! command -v pio &> /dev/null; then
+        print_error "PlatformIO not found. Cannot build simulator firmware."
+        print_info "Install with: pip install platformio"
+        exit 1
+    fi
+    
+    # Build simulation firmware
+    print_info "Building simulation firmware..."
+    pio run -e simulide
+    
+    if [ $? -ne 0 ]; then
+        print_error "Failed to build simulation firmware"
+        exit 1
+    fi
+    
+    print_status "Simulation firmware built successfully"
+    
+    # Check if firmware was created and copy to expected location
+    BUILD_FIRMWARE_PATH=".pio/build/simulide/firmware.hex"
+    EXPECTED_FIRMWARE_PATH="out/simulide/firmware.hex"
+    
+    if [[ ! -f "$BUILD_FIRMWARE_PATH" ]]; then
+        print_error "Firmware file not found at build path: $BUILD_FIRMWARE_PATH"
+        exit 1
+    fi
+    
+    # Create output directory and copy firmware (same as PlatformIO upload_command)
+    print_info "Copying firmware to expected location..."
+    mkdir -p "out/simulide"
+    cp "$BUILD_FIRMWARE_PATH" "$EXPECTED_FIRMWARE_PATH"
+    
+    if [[ ! -f "$EXPECTED_FIRMWARE_PATH" ]]; then
+        print_error "Failed to copy firmware to expected location"
+        exit 1
+    fi
+    
+    print_status "Firmware ready at: $EXPECTED_FIRMWARE_PATH"
+    
+    # Check if SimulIDE is installed and launch it
+    SIMULIDE_PATH=""
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        if [[ -d "/Applications/simulide.app" ]]; then
+            SIMULIDE_PATH="/Applications/simulide.app/Contents/MacOS/simulide"
+        elif [[ -d "$HOME/Applications/simulide.app" ]]; then
+            SIMULIDE_PATH="$HOME/Applications/simulide.app/Contents/MacOS/simulide"
+        fi
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux
+        if command -v simulide &> /dev/null; then
+            SIMULIDE_PATH="simulide"
+        fi
+    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+        # Windows
+        if command -v simulide.exe &> /dev/null; then
+            SIMULIDE_PATH="simulide.exe"
+        fi
+    fi
+    
+    if [[ -n "$SIMULIDE_PATH" ]]; then
+        print_status "Launching SimulIDE..."
+        
+        # Choose the wiring file to use
+        WIRING_FILE="../../wiring/rocker_launcher_controls.sim1"
+        if [[ ! -f "$WIRING_FILE" ]]; then
+            print_warning "Default wiring file not found, looking for alternatives..."
+            
+            # Find any .sim1 file
+            ALTERNATIVE_WIRING=$(find "../../wiring" -name "*.sim1" | head -1)
+            if [[ -n "$ALTERNATIVE_WIRING" ]]; then
+                WIRING_FILE="$ALTERNATIVE_WIRING"
+                print_info "Using alternative wiring file: $WIRING_FILE"
+            else
+                print_warning "No wiring files found, launching SimulIDE without wiring file"
+                WIRING_FILE=""
+            fi
+        fi
+        
+        if [[ -n "$WIRING_FILE" ]]; then
+            print_info "Loading wiring file: $WIRING_FILE"
+            "$SIMULIDE_PATH" "$WIRING_FILE" &
+        else
+            print_info "Launching SimulIDE without wiring file..."
+            "$SIMULIDE_PATH" &
+        fi
+        
+        print_status "SimulIDE launched successfully!"
+        print_info "💡 Development Tips:"
+        print_info "  • The firmware will auto-load in SimulIDE"
+        print_info "  • Make changes to your code and re-run: ./scripts/build.sh sim"
+        print_info "  • Check SimulIDE console for any runtime errors"
+    else
+        print_warning "SimulIDE not found - firmware built but not launched"
+        print_info "📋 Manual Launch Instructions:"
+        print_info "1. Open SimulIDE manually"
+        print_info "2. Load the wiring file: ../../wiring/rocker_launcher_controls.sim1"
+        print_info "3. The firmware will auto-load from: $EXPECTED_FIRMWARE_PATH"
+        print_info ""
+        print_info "Install SimulIDE from: https://www.simulide.com/"
+    fi
+    
+    print_status "Simulator setup complete!"
+}
+
 # Function to show status
 show_status() {
     print_status "Project Status"
@@ -295,6 +406,9 @@ main() {
         "all-firmware")
             check_dependencies
             build_target "all_firmware" "Building both firmwares"
+            ;;
+        "sim")
+            launch_simulator
             ;;
         "upload")
             check_dependencies
