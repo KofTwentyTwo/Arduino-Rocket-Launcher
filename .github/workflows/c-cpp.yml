@@ -306,39 +306,85 @@ jobs:
         
     - name: Create release package
       run: |
-        mkdir -p release
-        cp -r artifacts/simulation-firmware/* release/
-        cp -r artifacts/hardware-firmware/* release/
+        mkdir -p release/firmware/hardware
+        mkdir -p release/firmware/simulide
+        mkdir -p release/3dprints
+        mkdir -p release/simulide
         
-        # Create a README for the release
+        # Copy firmware files to proper directories
+        cp -r artifacts/hardware-firmware/* release/firmware/hardware/
+        cp -r artifacts/simulation-firmware/* release/firmware/simulide/
+        
+        # Copy 3D print files (if they exist)
+        if [ -d "prints" ]; then
+          cp -r prints/* release/3dprints/ 2>/dev/null || true
+        fi
+        
+        # Copy SimulIDE wiring files
+        if [ -d "wiring" ]; then
+          cp -r wiring/*.sim1 release/simulide/ 2>/dev/null || true
+        fi
+        
+        # Create a comprehensive README for the release
         cat > release/README.md << 'EOF'
-        # Luke's Rocket Launcher Firmware Release
+        # Luke's Rocket Launcher v${{ needs.create-tag.outputs.tag }}
         
-        ## Firmware Files
+        ## 📁 Package Structure
         
-        ### Simulation (SimulIDE)
-        - `firmware.hex` - Hex file for SimulIDE simulation
-        - `firmware.elf` - ELF file for debugging
+        ```
+        ├── firmware/
+        │   ├── hardware/          # Arduino UNO firmware files
+        │   └── simulide/          # SimulIDE simulation firmware
+        ├── 3dprints/              # 3D printable parts (SLA files)
+        ├── simulide/              # SimulIDE wiring files (.sim1)
+        └── README.md              # This file
+        ```
+        
+        ## 🚀 Firmware Files
         
         ### Hardware (Arduino UNO)
-        - `firmware.hex` - Hex file for Arduino upload
-        - `firmware.elf` - ELF file for debugging
+        - `firmware/hardware/firmware.hex` - Hex file for Arduino upload
+        - `firmware/hardware/firmware.elf` - ELF file for debugging
         
-        ## Installation
+        ### Simulation (SimulIDE)
+        - `firmware/simulide/firmware.hex` - Hex file for SimulIDE simulation
+        - `firmware/simulide/firmware.elf` - ELF file for debugging
         
-        ### For Simulation
-        1. Open SimulIDE
-        2. Load `wiring/rocker_launcher_controls.sim1`
-        3. The firmware will auto-load from the hex file
+        ## 🖨️ 3D Prints
+        
+        - `3dprints/` - Contains all 3D printable parts
+        - Files are optimized for SLA printing
+        - Includes waterproof case components
+        
+        ## 🔌 SimulIDE Files
+        
+        - `simulide/*.sim1` - Circuit simulation files
+        - Load these in SimulIDE for testing
+        - Firmware auto-loads from hex files
+        
+        ## 📋 Installation
         
         ### For Hardware
-        1. Use Arduino IDE or PlatformIO to upload `firmware.hex`
-        2. Or use `make upload` from the project directory
+        1. Download the package
+        2. Use Arduino IDE or PlatformIO to upload `firmware/hardware/firmware.hex`
+        3. Or use `make upload` from the project directory
         
-        ## Build Information
-        - Built on: ${{ github.event.release.created_at }}
-        - Commit: ${{ github.sha }}
-        - Platform: ${{ runner.os }}
+        ### For Simulation
+        1. Download the package
+        2. Open SimulIDE
+        3. Load `simulide/rocker_launcher_controls.sim1`
+        4. The firmware will auto-load from `firmware/simulide/firmware.hex`
+        
+        ## 🏗️ Build Information
+        - **Version**: ${{ needs.create-tag.outputs.tag }}
+        - **Built on**: ${{ github.event.head_commit.timestamp }}
+        - **Commit**: ${{ github.sha }}
+        - **Platform**: ${{ runner.os }}
+        
+        ## 📚 Documentation
+        - [Project README](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher#readme)
+        - [Wiring Guide](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/tree/main/wiring)
+        - [3D Prints](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/tree/main/prints)
         EOF
         
     - name: Create release zip
@@ -414,9 +460,24 @@ jobs:
         
     - name: Create package manifest
       run: |
-        mkdir -p package
-        cp -r artifacts/simulation-firmware/* package/
-        cp -r artifacts/hardware-firmware/* package/
+        mkdir -p package/firmware/hardware
+        mkdir -p package/firmware/simulide
+        mkdir -p package/3dprints
+        mkdir -p package/simulide
+        
+        # Copy firmware files to proper directories
+        cp -r artifacts/hardware-firmware/* package/firmware/hardware/
+        cp -r artifacts/simulation-firmware/* package/firmware/simulide/
+        
+        # Copy 3D print files (if they exist)
+        if [ -d "prints" ]; then
+          cp -r prints/* package/3dprints/ 2>/dev/null || true
+        fi
+        
+        # Copy SimulIDE wiring files
+        if [ -d "wiring" ]; then
+          cp -r wiring/*.sim1 package/simulide/ 2>/dev/null || true
+        fi
         
         # Create package.json for npm-style packaging
         cat > package/package.json << EOF
@@ -424,10 +485,12 @@ jobs:
           "name": "lukes-rocket-launcher-firmware",
           "version": "${{ needs.version.outputs.version }}",
           "description": "Arduino firmware for Luke's Rocket Launch Controller",
-          "main": "firmware.hex",
+          "main": "firmware/hardware/firmware.hex",
           "files": [
-            "*.hex",
-            "*.elf",
+            "firmware/**/*.hex",
+            "firmware/**/*.elf",
+            "3dprints/**/*",
+            "simulide/**/*.sim1",
             "README.md"
           ],
           "repository": {
@@ -439,7 +502,8 @@ jobs:
             "rocket",
             "launcher",
             "firmware",
-            "simulide"
+            "simulide",
+            "3d-printing"
           ],
           "author": "KofTwentyTwo",
           "license": "MIT",
@@ -450,36 +514,66 @@ jobs:
         }
         EOF
         
-        # Create detailed README
+        # Create comprehensive README
         cat > package/README.md << EOF
-        # Luke's Rocket Launcher Firmware v${{ needs.version.outputs.version }}
+        # Luke's Rocket Launcher v${{ needs.version.outputs.version }}
         
-        ## Firmware Files
+        ## 📁 Package Structure
         
-        ### Simulation (SimulIDE)
-        - \`firmware.hex\` - Hex file for SimulIDE simulation
-        - \`firmware.elf\` - ELF file for debugging
+        \`\`\`
+        ├── firmware/
+        │   ├── hardware/          # Arduino UNO firmware files
+        │   └── simulide/          # SimulIDE simulation firmware
+        ├── 3dprints/              # 3D printable parts (SLA files)
+        ├── simulide/              # SimulIDE wiring files (.sim1)
+        └── README.md              # This file
+        \`\`\`
+        
+        ## 🚀 Firmware Files
         
         ### Hardware (Arduino UNO)
-        - \`firmware.hex\` - Hex file for Arduino upload
-        - \`firmware.elf\` - ELF file for debugging
+        - \`firmware/hardware/firmware.hex\` - Hex file for Arduino upload
+        - \`firmware/hardware/firmware.elf\` - ELF file for debugging
         
-        ## Installation
+        ### Simulation (SimulIDE)
+        - \`firmware/simulide/firmware.hex\` - Hex file for SimulIDE simulation
+        - \`firmware/simulide/firmware.elf\` - ELF file for debugging
         
-        ### For Simulation
-        1. Open SimulIDE
-        2. Load \`wiring/rocker_launcher_controls.sim1\`
-        3. The firmware will auto-load from the hex file
+        ## 🖨️ 3D Prints
+        
+        - \`3dprints/\` - Contains all 3D printable parts
+        - Files are optimized for SLA printing
+        - Includes waterproof case components
+        
+        ## 🔌 SimulIDE Files
+        
+        - \`simulide/*.sim1\` - Circuit simulation files
+        - Load these in SimulIDE for testing
+        - Firmware auto-loads from hex files
+        
+        ## 📋 Installation
         
         ### For Hardware
-        1. Use Arduino IDE or PlatformIO to upload \`firmware.hex\`
-        2. Or use \`make upload\` from the project directory
+        1. Download the package
+        2. Use Arduino IDE or PlatformIO to upload \`firmware/hardware/firmware.hex\`
+        3. Or use \`make upload\` from the project directory
         
-        ## Build Information
+        ### For Simulation
+        1. Download the package
+        2. Open SimulIDE
+        3. Load \`simulide/rocker_launcher_controls.sim1\`
+        4. The firmware will auto-load from \`firmware/simulide/firmware.hex\`
+        
+        ## 🏗️ Build Information
         - **Version**: ${{ needs.version.outputs.version }}
-        - **Built on**: $(date)
+        - **Built on**: ${{ github.event.head_commit.timestamp }}
         - **Commit**: ${{ github.sha }}
         - **Platform**: ${{ runner.os }}
+        
+        ## 📚 Documentation
+        - [Project README](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher#readme)
+        - [Wiring Guide](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/tree/main/wiring)
+        - [3D Prints](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/tree/main/prints)
         
         ## Changelog
         See [GitHub Releases](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/releases) for detailed changelog.
