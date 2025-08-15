@@ -4,10 +4,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifdef ARDUINO
+#if defined(ARDUINO) && ARDUINO >= 100
 #include <Arduino.h>
 #else
-#include "../test/mock_arduino.h"
+// Test environment - provide minimal Arduino definitions
+#define HIGH 1
+#define LOW 0
+#define INPUT 0
+#define OUTPUT 1
+#define INPUT_PULLUP 2
+
+// Arduino types
+typedef uint8_t byte;
+typedef bool boolean;
+
+// Arduino classes (forward declarations)
+class LiquidCrystal;
+class Bounce;
 #endif
 
 // Hardware abstraction interface

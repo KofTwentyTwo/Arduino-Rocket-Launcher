@@ -72,10 +72,15 @@ class RealArduinoInterface : public ArduinoInterface
 
    ~RealArduinoInterface()
    {
+      // Suppress warning about non-virtual destructors
+      // We're deleting concrete objects, not through base pointers
+      #pragma GCC diagnostic push
+      #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
       delete lcd;
       delete dbArm;
       delete dbReset;
       delete dbLaunch;
+      #pragma GCC diagnostic pop
    }
 
    // Pin control

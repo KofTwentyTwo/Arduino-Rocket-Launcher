@@ -151,16 +151,19 @@ void RocketController::enter(State newState)
 // Input handling methods
 void RocketController::setArmState(bool armed)
 {
+   (void)armed;  // Suppress unused parameter warning
    // This will be called from the interface when ARM switch changes
 }
 
 void RocketController::setResetPressed(bool pressed)
 {
+   (void)pressed;  // Suppress unused parameter warning
    // This will be called from the interface when RESET button changes
 }
 
 void RocketController::setLaunchPressed(bool pressed)
 {
+   (void)pressed;  // Suppress unused parameter warning
    // This will be called from the interface when LAUNCH button changes
 }
 
@@ -235,6 +238,7 @@ void RocketController::updateSplash(uint32_t now)
 
 void RocketController::updateReady(uint32_t now)
 {
+   (void)now;  // Suppress unused parameter warning
    if (!systemLocked && interface->isArmPressed())
    {
       enter(State::ARMED);
