@@ -3,6 +3,12 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.9 (RocketLauncher)" />
   </component>
+  <component name="CidrRootsConfiguration">
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.pio" />
+      <file path="$PROJECT_DIR$/.venv" />
+    </excludeRoots>
+  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="PlatformIOSettings">
     <option name="linkedExternalProjectsSettings">
