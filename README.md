@@ -1,6 +1,6 @@
 # 🚀 Luke's Rocket Launch Controller
 
-**Luke's totally awesome, over engineered, completely silly, ridiculous** Arduino-based model rocket launch controller designed for maximum fun, safety, reliability, and pure rocket-launching joy! This project combines simple electronics with some safety features to create a launch system suitable for both educational and recreational rocketry. 
+**Luke's totally awesome, over engineered, completely silly, and ridiculous** Arduino-based model rocket launch controller designed for maximum fun, safety, reliability, and pure rocket-launching joy! This project combines simple electronics with some safety features to create a launch system suitable for both educational and recreational rocketry. 
 
 **To be clear** - this is for a nerdy 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
 
@@ -10,8 +10,8 @@
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/Arduino-Rocket-Launcher.git
-cd Arduino-Rocket-Launcher/code/RocketLauncher
+git clone https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher.git
+cd Lukes-Rocket-Launcher/code/RocketLauncher
 
 # 🚀 Run tests and build everything (recommended)
 make
@@ -25,8 +25,6 @@ make build-only
 # ❓ See all available commands
 make help
 ```
-
-**What's new?** Professional testing, automated builds, and code quality tools! 🎉 
 
 ![Rocket Launch Controller Circuit](docs/screen-1.png)
 
@@ -157,8 +155,8 @@ The project now includes comprehensive unit testing:
 ### **Installation**
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/Arduino-Rocket-Launcher.git
-   cd Arduino-Rocket-Launcher
+   git clone https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher.git
+   cd Lukes-Rocket-Launcher
    ```
 
 2. Open the project in PlatformIO:
@@ -279,7 +277,7 @@ The project includes a comprehensive test suite:
 
 ### **Project Structure**
 ```
-Arduino-Rocket-Launcher/
+Lukes-Rocket-Launcher/
 ├── code/RocketLauncher/         # Main Arduino project
 │   ├── src/                     # Source files
 │   │   ├── main.cpp             # Arduino entry point
