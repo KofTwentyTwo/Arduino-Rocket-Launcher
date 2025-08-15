@@ -34,17 +34,11 @@ set(HEADERS
 if(BUILD_TESTS)
     enable_testing()
     
-    # Create Unity test framework library directly
-    add_library(Unity lib/Unity/unity.cpp)
-    target_include_directories(Unity PUBLIC lib/Unity)
-    
     # Test executable (excludes main.cpp and Arduino-specific code)
     add_executable(rocket_tests
         test/test_rocket_controller.cpp
         src/RocketController.cpp
     )
-    
-    target_link_libraries(rocket_tests Unity)
     
     # Test configuration (same as PlatformIO native env)
     target_compile_definitions(rocket_tests PRIVATE

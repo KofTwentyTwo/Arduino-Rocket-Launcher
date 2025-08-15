@@ -1,8 +1,102 @@
-#include <unity.h>
 #include <cstring>
 #include <cstdio>
+#include <iostream>
 #include "../src/RocketController.h"
 #include "../src/ArduinoInterface.h"
+
+// Minimal Unity test framework implementation for CMake builds
+// This avoids dependency on external Unity files
+namespace Unity {
+    extern int unity_current_test_failed;
+    extern int unity_number_of_tests;
+    extern int unity_number_of_failures;
+    
+    void unity_begin(const char* filename);
+    void unity_end(void);
+    void unity_run_test(void (*test_func)(void), const char* test_name);
+}
+
+// Forward declarations for test setup/teardown
+void setUp(void);
+void tearDown(void);
+
+// Unity test framework - minimal implementation for CMake integration
+int Unity::unity_current_test_failed = 0;
+int Unity::unity_number_of_tests = 0;
+int Unity::unity_number_of_failures = 0;
+
+void Unity::unity_begin(const char* filename) {
+    std::cout << "Unity Test Framework" << std::endl;
+    std::cout << "===================" << std::endl;
+    std::cout << "Running tests from: " << filename << std::endl << std::endl;
+    
+    unity_current_test_failed = 0;
+    unity_number_of_tests = 0;
+    unity_number_of_failures = 0;
+}
+
+void Unity::unity_end(void) {
+    std::cout << std::endl << "===================" << std::endl;
+    std::cout << "Test Results:" << std::endl;
+    std::cout << "Tests Run: " << unity_number_of_tests << std::endl;
+    std::cout << "Failures: " << unity_number_of_failures << std::endl;
+    
+    if (unity_number_of_failures == 0) {
+        std::cout << "All tests passed!" << std::endl;
+    } else {
+        std::cout << "Some tests failed!" << std::endl;
+    }
+}
+
+void Unity::unity_run_test(void (*test_func)(void), const char* test_name) {
+    std::cout << "Running test: " << test_name << std::endl;
+    
+    unity_current_test_failed = 0;
+    
+    // Call setUp and tearDown if they exist
+    setUp();
+    test_func();
+    tearDown();
+    
+    if (unity_current_test_failed) {
+        std::cout << "  ❌ FAILED" << std::endl;
+    } else {
+        std::cout << "  ✅ PASSED" << std::endl;
+    }
+}
+
+// Unity test macros
+#define TEST_ASSERT(condition) \
+    do { \
+        if (!(condition)) { \
+            Unity::unity_current_test_failed = 1; \
+            Unity::unity_number_of_failures++; \
+        } \
+        Unity::unity_number_of_tests++; \
+    } while(0)
+
+#define TEST_ASSERT_EQUAL(expected, actual) \
+    TEST_ASSERT((expected) == (actual))
+
+#define TEST_ASSERT_TRUE(condition) \
+    TEST_ASSERT(condition)
+
+#define TEST_ASSERT_FALSE(condition) \
+    TEST_ASSERT(!(condition))
+
+#define TEST_ASSERT_NULL(pointer) \
+    TEST_ASSERT((pointer) == nullptr)
+
+#define TEST_ASSERT_NOT_NULL(pointer) \
+    TEST_ASSERT((pointer) != nullptr)
+
+#define TEST_ASSERT_LESS_OR_EQUAL(expected, actual) \
+    TEST_ASSERT((actual) <= (expected))
+
+// Unity test runner macros
+#define UNITY_BEGIN() Unity::unity_begin(__FILE__)
+#define UNITY_END() Unity::unity_end()
+#define RUN_TEST(test_func) Unity::unity_run_test(test_func, #test_func)
 
 // Simple mock Arduino interface for testing
 class MockArduinoInterface : public ArduinoInterface
