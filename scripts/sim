@@ -1,0 +1,3 @@
+#!/bin/bash
+# 🚀 Quick alias for launching the simulator
+exec "$(dirname "$0")/dev-sim.sh" "$@"

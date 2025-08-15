@@ -184,9 +184,35 @@ Lukes-Rocket-Launcher/
 ├── scripts/
 │   ├── release.sh                   # Release management
 │   ├── create-branch.sh            # Branch creation
-│   └── setup-branch-protection.sh  # Branch protection setup
+│   ├── setup-branch-protection.sh  # Branch protection setup
+│   ├── dev-sim.sh                  # Development simulator launcher
+│   └── sim                         # Quick simulator alias
 ├── code/RocketLauncher/            # Main firmware code
+├── wiring/                         # SimulIDE wiring files
 └── RELEASE.md                      # This file
+```
+
+## 🖥️ Development Environment
+
+### **Local Development Tools**
+- **PlatformIO** - Arduino framework and build system
+- **SimulIDE** - Arduino simulator for testing
+- **CMake** - IDE integration and native testing
+- **Unity** - Unit testing framework
+
+### **Quick Development Commands**
+```bash
+# Launch simulator (builds + opens SimulIDE)
+./scripts/sim
+
+# Clean rebuild
+./scripts/sim --clean
+
+# Run tests
+cd code/RocketLauncher && pio test -e native
+
+# Build hardware firmware
+cd code/RocketLauncher && pio run -e uno_hw
 ```
 
 ---
@@ -213,8 +239,24 @@ Lukes-Rocket-Launcher/
 ### **Normal Development**
 1. Create feature branch: `./scripts/create-branch.sh feature new-feature`
 2. Make changes and commit
-3. Push and create PR to develop
-4. Merge when ready
+3. **Test locally**: `./scripts/sim` (builds and launches simulator)
+4. Push and create PR to develop
+5. Merge when ready
+
+### **Local Development Cycle**
+```bash
+# Quick simulator launch (builds + launches SimulIDE)
+./scripts/sim
+
+# Force clean rebuild
+./scripts/sim --clean
+
+# Run unit tests
+cd code/RocketLauncher && pio test -e native
+
+# Build hardware firmware
+cd code/RocketLauncher && pio run -e uno_hw
+```
 
 ### **Release Day**
 1. Start release: `./scripts/release.sh 1.0.0 start`
