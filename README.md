@@ -9,62 +9,6 @@
 
 **To be clear** - this is for a nerdy 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
 
-## ⚡ **Quick Start** (New & Improved!)
-
-**Want to get started fast?** The project now includes a professional build system!
-
-```bash
-# Clone and setup
-git clone https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher.git
-cd Lukes-Rocket-Launcher/code/RocketLauncher
-
-# 🚀 Run tests and build everything (recommended)
-make
-
-# 🧪 Just run tests
-make test
-
-# 🔧 Build everything (skip tests)
-make build-only
-
-# ❓ See all available commands
-make help
-```
-
-## 🚀 **Automated Builds & Releases**
-
-**Every push to main automatically builds and tests your firmware!** 
-
-- **🧪 Automated Testing**: Unit tests run on every commit
-- **🔧 Multi-Platform Builds**: Firmware built for Ubuntu, Windows, and macOS
-- **📦 Downloadable Releases**: Pre-built firmware files available as GitHub artifacts
-- **🎯 Release Automation**: Create GitHub releases to automatically package firmware
-- **🏷️ Semantic Versioning**: Automatic version management with proper release notes
-
-**Get the latest firmware without building:**
-1. Go to [Actions](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
-2. Click on the latest successful workflow run
-3. Download the firmware artifacts
-4. Upload to your Arduino or use in SimulIDE!
-
-### 🏷️ **Semantic Versioning**
-
-**Automatic Version Management:**
-- **Patch releases** (1.0.0 → 1.0.1): Bug fixes and improvements
-- **Minor releases** (1.0.0 → 1.1.0): New features (backward compatible)
-- **Major releases** (1.0.0 → 2.0.0): Breaking changes
-
-**Create a Release:**
-1. **Manual Release**: Go to Actions → Semantic Release → Run workflow
-2. **Auto Release**: Push a tag (e.g., `git tag v1.0.0 && git push origin v1.0.0`)
-3. **Commit-based**: Use conventional commit messages for automatic versioning
-
-**Conventional Commit Format:**
-```bash
-feat(arduino): add new safety feature
-fix(testing): resolve startup transition issue
-docs: update installation instructions
-```
 
 ![Rocket Launch Controller Circuit](docs/screen-1.png)
 
