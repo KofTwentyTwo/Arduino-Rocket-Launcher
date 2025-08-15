@@ -582,7 +582,9 @@ jobs:
     - name: Create package archive
       run: |
         cd package
+        # Create TAR archive for release upload
         tar -czf ../lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.tar.gz .
+        # Create ZIP archive (available for GitHub Packages, not uploaded to release)
         zip -r ../lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip .
         cd ..
         
@@ -596,12 +598,5 @@ jobs:
         asset_name: lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.tar.gz
         asset_content_type: application/gzip
         
-    - name: Publish ZIP to GitHub Packages
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-tag.outputs.upload_url }}
-        asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
-        asset_name: lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
-        asset_content_type: application/zip
+    # Note: ZIP file is created but not uploaded to avoid duplicate release assets
+    # TAR file is uploaded to the release, ZIP is available for GitHub Packages if needed
