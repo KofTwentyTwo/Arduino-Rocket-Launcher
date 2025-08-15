@@ -1,0 +1,124 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Configuration",
+      "description": "Default build configuration with tests and PlatformIO integration",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON",
+        "PLATFORMIO_INTEGRATION": "ON",
+        "ENABLE_FORMATTING": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release Configuration",
+      "description": "Release build configuration optimized for production",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTS": "OFF",
+        "PLATFORMIO_INTEGRATION": "ON",
+        "ENABLE_FORMATTING": "OFF"
+      }
+    },
+    {
+      "name": "tests-only",
+      "displayName": "Tests Only",
+      "description": "Build only unit tests (no PlatformIO integration)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-tests",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON",
+        "PLATFORMIO_INTEGRATION": "OFF",
+        "ENABLE_FORMATTING": "ON"
+      }
+    },
+    {
+      "name": "minimal",
+      "displayName": "Minimal Configuration",
+      "description": "Minimal build with no tests or PlatformIO integration",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-minimal",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "OFF",
+        "PLATFORMIO_INTEGRATION": "OFF",
+        "ENABLE_FORMATTING": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "targets": ["all"]
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "targets": ["all"]
+    },
+    {
+      "name": "tests",
+      "configurePreset": "tests-only",
+      "targets": ["rocket_tests"]
+    },
+    {
+      "name": "minimal",
+      "configurePreset": "minimal",
+      "targets": ["all"]
+    },
+    {
+      "name": "clean",
+      "configurePreset": "default",
+      "targets": ["clean"]
+    },
+    {
+      "name": "firmware-sim",
+      "configurePreset": "default",
+      "targets": ["firmware_sim"]
+    },
+    {
+      "name": "firmware-hw",
+      "configurePreset": "default",
+      "targets": ["firmware_hw"]
+    },
+    {
+      "name": "all-firmware",
+      "configurePreset": "default",
+      "targets": ["all_firmware"]
+    },
+    {
+      "name": "upload",
+      "configurePreset": "default",
+      "targets": ["upload"]
+    },
+    {
+      "name": "monitor",
+      "configurePreset": "default",
+      "targets": ["monitor"]
+    },
+    {
+      "name": "pio-clean",
+      "configurePreset": "default",
+      "targets": ["pio_clean"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "quick",
+      "configurePreset": "tests-only"
+    }
+  ]
+}

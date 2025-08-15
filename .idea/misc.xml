@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakePythonSetting">
+    <option name="pythonIntegrationState" value="YES" />
+  </component>
+  <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$/code/RocketLauncher">
+    <contentRoot DIR="$PROJECT_DIR$" />
+  </component>
+  <component name="CidrRootsConfiguration">
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/code/RocketLauncher/.pio" />
+      <file path="$PROJECT_DIR$/code/RocketLauncher/.venv" />
+      <file path="$PROJECT_DIR$/code/RocketLauncher/.vscode" />
+    </excludeRoots>
+  </component>
+</project>
