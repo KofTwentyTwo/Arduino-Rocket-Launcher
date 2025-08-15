@@ -277,7 +277,7 @@ jobs:
           
           ### Build Information
           - **Version**: ${{ needs.version.outputs.version }}
-          - **Build Date**: $(date)
+          - **Build Date**: ${{ github.event.head_commit.timestamp }}
           - **Commit**: ${{ github.sha }}
         draft: false
         prerelease: false
