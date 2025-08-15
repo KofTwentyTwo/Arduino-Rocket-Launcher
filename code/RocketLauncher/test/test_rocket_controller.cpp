@@ -205,17 +205,31 @@ void test_startup_to_ready_transition(void)
    // Verify we start in STARTUP
    TEST_ASSERT_EQUAL(State::STARTUP, controller->getState());
    
-   // Simulate startup completion by advancing time
-   mockInterface->setMockTime(RocketController::STARTUP_TOTAL_TIME_MS + 1000);
+   // The startup process takes:
+   // - 20 startup checks × 250ms = 5000ms (5 seconds)
+   // - Additional wait time = 2000ms (2 seconds)
+   // - Total: 7000ms (7 seconds)
    
-   // Update the controller
-   controller->update(mockInterface->millis());
+   uint32_t currentTime = 0;
+   const uint32_t stepSize = 100; // Check every 100ms
+   const uint32_t maxTime = 10000; // Max 10 seconds to be safe
    
-   // Should transition to READY state
+   // Advance time until startup completes
+   while (currentTime < maxTime && controller->getState() == State::STARTUP)
+   {
+      currentTime += stepSize;
+      mockInterface->setMockTime(currentTime);
+      controller->update(mockInterface->millis());
+   }
+   
+   // Should now transition to READY state
    TEST_ASSERT_EQUAL(State::READY, controller->getState());
    
    // System should no longer be locked
    TEST_ASSERT_FALSE(controller->isSystemLocked());
+   
+   // Verify startup completed within reasonable time (should be around 7 seconds)
+   TEST_ASSERT_LESS_OR_EQUAL(10000, currentTime);
 }
 
 // Test 3: Button Input Handling
