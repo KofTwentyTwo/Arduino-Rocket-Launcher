@@ -390,7 +390,7 @@ jobs:
     - name: Create release zip
       run: |
         cd release
-        zip -r ../lukes-rocket-launcher-firmware-v${{ needs.create-tag.outputs.tag }}.zip .
+        zip -r ../lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip .
         cd ..
         
     - name: Upload release assets
@@ -399,8 +399,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-tag.outputs.upload_url }}
-        asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.create-tag.outputs.tag }}.zip
-        asset_name: lukes-rocket-launcher-firmware-v${{ needs.create-tag.outputs.tag }}.zip
+        asset_path: ./lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
+        asset_name: lukes-rocket-launcher-firmware-v${{ needs.version.outputs.version }}.zip
         asset_content_type: application/zip
 
   build-status:
