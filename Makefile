@@ -37,6 +37,7 @@ help: ## Show this help message
 	@echo "  make upload       # Upload to Arduino"
 	@echo "  make clean        # Clean build files"
 	@echo "  make test         # Run tests"
+	@echo "  make test-native  # Run fast native tests"
 
 # Build targets
 .PHONY: build-sim
@@ -79,6 +80,25 @@ monitor: ## Monitor Arduino serial output
 test: ## Run project tests
 	@echo "$(GREEN)🧪 Running tests...$(NC)"
 	@cd $(PROJECT_DIR) && $(PIO_CMD) test
+	@echo "$(GREEN)✅ Tests completed!$(NC)"
+
+.PHONY: test-native
+test-native: ## Run tests on native platform (faster)
+	@echo "$(GREEN)🧪 Running native tests...$(NC)"
+	@cd $(PROJECT_DIR) && $(PIO_CMD) test -e native
+	@echo "$(GREEN)✅ Native tests completed!$(NC)"
+
+.PHONY: test-verbose
+test-verbose: ## Run tests with verbose output
+	@echo "$(GREEN)🧪 Running verbose tests...$(NC)"
+	@cd $(PROJECT_DIR) && $(PIO_CMD) test --verbose
+	@echo "$(GREEN)✅ Verbose tests completed!$(NC)"
+
+.PHONY: test-coverage
+test-coverage: ## Run tests with coverage analysis
+	@echo "$(GREEN)🧪 Running tests with coverage...$(NC)"
+	@cd $(PROJECT_DIR) && $(PIO_CMD) test --coverage
+	@echo "$(GREEN)✅ Coverage tests completed!$(NC)"
 
 .PHONY: check
 check: ## Check code formatting and style
