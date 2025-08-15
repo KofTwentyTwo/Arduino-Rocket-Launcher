@@ -37,6 +37,7 @@ show_usage() {
     echo "  -v, --version VERSION    Specify exact version (e.g., 1.0.0)"
     echo "  -t, --type TYPE          Release type: patch, minor, major (default: patch)"
     echo "  -m, --message MESSAGE    Custom release message"
+    echo "  -p, --pre-release        Mark as pre-release (alpha/beta/rc)"
     echo "  -d, --dry-run            Show what would be done without doing it"
     echo "  -h, --help               Show this help message"
     echo ""
@@ -44,6 +45,7 @@ show_usage() {
     echo "  $0 --type minor                    # Auto-increment minor version"
     echo "  $0 --version 1.0.0                # Release specific version"
     echo "  $0 --type patch --message 'Bug fix release'"
+    echo "  $0 --version 0.1.0 --pre-release # Create pre-release"
     echo ""
     echo "Conventional Commit Messages:"
     echo "  feat: new feature"
@@ -59,6 +61,7 @@ show_usage() {
 VERSION=""
 RELEASE_TYPE="patch"
 MESSAGE=""
+PRE_RELEASE=false
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
@@ -74,6 +77,10 @@ while [[ $# -gt 0 ]]; do
         -m|--message)
             MESSAGE="$2"
             shift 2
+            ;;
+        -p|--pre-release)
+            PRE_RELEASE=true
+            shift
             ;;
         -d|--dry-run)
             DRY_RUN=true
@@ -150,6 +157,9 @@ fi
 # Show what will be done
 print_header "Release Plan"
 echo "1. Create tag: $NEW_TAG"
+if [[ "$PRE_RELEASE" == true ]]; then
+    echo "   ⚠️  This will be marked as a PRE-RELEASE"
+fi
 echo "2. Push tag to remote"
 echo "3. Trigger GitHub Actions release workflow"
 echo "4. Create GitHub release with firmware files"
@@ -170,15 +180,30 @@ fi
 
 # Create and push tag
 print_status "Creating tag $NEW_TAG..."
-git tag -a "$NEW_TAG" -m "Release $NEW_TAG
+if [[ "$PRE_RELEASE" == true ]]; then
+    TAG_MESSAGE="Pre-release $NEW_TAG
+
+$MESSAGE
+
+⚠️  This is a pre-release version. Not recommended for production use."
+else
+    TAG_MESSAGE="Release $NEW_TAG
 
 $MESSAGE"
+fi
+
+git tag -a "$NEW_TAG" -m "$TAG_MESSAGE"
 
 print_status "Pushing tag to remote..."
 git push origin "$NEW_TAG"
 
 print_header "Release Complete!"
-print_status "Tag $NEW_TAG has been created and pushed"
+if [[ "$PRE_RELEASE" == true ]]; then
+    print_warning "Tag $NEW_TAG has been created and pushed as a PRE-RELEASE"
+    print_warning "Remember to mark this as a pre-release in GitHub after the workflow completes"
+else
+    print_status "Tag $NEW_TAG has been created and pushed"
+fi
 print_status "GitHub Actions will automatically:"
 echo "  • Build and test the firmware"
 echo "  • Create a GitHub release"
