@@ -1,7 +1,8 @@
 # 🚀 Luke's Rocket Launch Controller
 
-[![Build Status](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/workflows/Build%20and%20Test%20Arduino%20Firmware/badge.svg)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
-[![Tests](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/workflows/Build%20and%20Test%20Arduino%20Firmware/badge.svg?branch=main&event=push)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions)
+[![CI/CD Pipeline](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/workflows/Build%20and%20Test%20Arduino%20Firmware/badge.svg)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions?query=workflow%3A%22Build+and+Test+Arduino+Firmware%22)
+[![Latest Release](https://img.shields.io/github/v/release/KofTwentyTwo/Lukes-Rocket-Launcher?include_prereleases&sort=semver)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/releases)
+[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)](https://github.com/KofTwentyTwo/Lukes-Rocket-Launcher/actions?query=workflow%3A%22Build+and+Test+Arduino+Firmware%22)
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-6.1.7-blue.svg)](https://platformio.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -9,12 +10,9 @@
 
 **To be clear** - this is for an awesome 11-year-old that loves rockets and micro-electronics and a nerdy dad that wants to empower and support him in every way possible. Because nothing says "I love you" like helping your kid build something that can launch rockets into the sky! 🚀💕
 
+![Rocket Launch Controller Circuit](docs/screen-1.png "Rocket Launch Controller Circuit")
 
-![Rocket Launch Controller Circuit](docs/screen-1.png)
-
-<video src="docs/clip-1.mp4" width="100%" controls>
-  Your browser doesn't support video playback, or this just still breaks at times in Github...
-</video> 
+![Rocket Launch Demo](docs/clip-1.mp4)
 
 *Watch the controller in action! The simulation shows the complete launch sequence from startup to ignition.*
 
@@ -155,57 +153,57 @@ The project now includes comprehensive unit testing:
    ```
 
 ### **Building & Testing** 🧪
-The project now includes a comprehensive build system with automated testing!
+The project now includes a comprehensive build system with automated testing and simulation!
 
 ```bash
-# 🚀 Default: Run tests and build everything
-make
+# 🚀 Build and launch simulator (recommended for development)
+./scripts/build.sh sim
 
-# 🧪 Just run tests
-make test
+# 🧪 Run unit tests
+./scripts/build.sh test
 
-# 🔧 Build everything (skip tests)
-make build-only
+# 🔧 Build everything (tests + CMake + PlatformIO)
+./scripts/build.sh
 
-# 🎮 Build for simulation
-make build-sim
+# 🎮 Build simulation firmware only
+./scripts/build.sh firmware-sim
 
-# ⚡ Build for hardware
-make build-hw
+# ⚡ Build hardware firmware only
+./scripts/build.sh firmware-hw
 
 # 📤 Upload to Arduino
-make upload
-
-# 🎮 Prepare for SimulIDE
-make upload-sim
+./scripts/build.sh upload
 
 # 📡 Monitor serial output
-make monitor
+./scripts/build.sh monitor
 
 # 🎨 Format code
-make format
+./scripts/build.sh format
 
 # 🧹 Clean build files
-make clean
+./scripts/build.sh clean
 
-# ❓ Show all available targets
-make help
+# ❓ Show all available commands
+./scripts/build.sh help
 ```
 
 **Why the new build system?** We've added comprehensive unit testing and automated builds to ensure reliability and make development easier!
 
 ### **Build System Benefits** 🎯
-- **🚀 One Command**: `make` runs tests and builds everything
+- **🚀 One Command**: `./scripts/build.sh sim` builds and launches simulator
 - **🧪 Quality Assurance**: Tests run automatically before builds
 - **🔧 Multiple Targets**: Build for simulation, hardware, or both
+- **🎮 Simulator Integration**: Automatic SimulIDE launch with firmware loading
 - **📱 Cross-Platform**: Works on macOS, Linux, and Windows
 - **🎨 Code Quality**: Automatic formatting and style checking
 - **📊 Status Monitoring**: Easy to see what's working and what needs attention
 
 ### **Simulation** (Test Before You Test!)
-The project includes SimulIDE simulation files:
-- Open `wiring/rocker_launcher_controls.sim1` in SimulIDE
-- The firmware will automatically load from the build output
+The project includes SimulIDE simulation files with **automatic launch**:
+- **One command**: `./scripts/build.sh sim` builds and launches SimulIDE
+- **Auto-loading**: Firmware automatically loads from the build output
+- **Wiring files**: Use `wiring/rocker_launcher_controls.sim1` for testing
+- **Fast iteration**: Make changes, re-run script, test immediately
 - Test all functionality before building hardware (because debugging with real rockets is expensive!)
 
 ## 🎨 **3D Printing & Assembly**
@@ -257,7 +255,7 @@ The project includes a comprehensive test suite:
 - **🔍 1 test under investigation**: Startup transition logic
 - **🧪 Test framework**: Unity-based unit testing with mock hardware
 
-**Run tests**: `make test` from the `code/RocketLauncher/` directory
+**Run tests**: `./scripts/build.sh test` from the `code/RocketLauncher/` directory
 
 ### **Project Structure**
 ```
@@ -322,11 +320,12 @@ We welcome contributions to improve the rocket launch controller! Areas for enha
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. **Run tests**: `make test` (must pass)
-5. **Build everything**: `make` (tests + builds)
-6. **Format code**: `make format` (maintains style)
-7. Test thoroughly (simulation + hardware)
-8. Submit a pull request
+4. **Run tests**: `./scripts/build.sh test` (must pass)
+5. **Test in simulator**: `./scripts/build.sh sim` (verify functionality)
+6. **Build everything**: `./scripts/build.sh` (tests + builds)
+7. **Format code**: `./scripts/build.sh format` (maintains style)
+8. Test thoroughly (simulation + hardware)
+9. Submit a pull request
 
 **Testing Requirements**: All new features must include unit tests. The test suite must pass before merging.
 
