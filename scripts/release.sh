@@ -105,45 +105,52 @@ finish_release() {
     local tag="v$version"
     
     echo -e "${BLUE}🎯 Finishing release $version${NC}"
-    echo "=================================="
+    echo "================================"
     
-    # Check if we're on the release branch
-    if [[ $(git branch --show-current) != $release_branch ]]; then
-        echo -e "${BLUE}📋 Switching to release branch...${NC}"
-        git checkout $release_branch
+    # Check if release branch exists
+    if ! branch_exists $release_branch; then
+        echo -e "${RED}❌ Release branch $release_branch doesn't exist${NC}"
+        echo "Please start a release first with: $0 $version start"
+        exit 1
     fi
     
-    # Ensure release branch is up to date
+    # Update release branch from remote
     echo -e "${BLUE}🔄 Updating release branch from remote...${NC}"
+    git checkout $release_branch
     git pull origin $release_branch
     
-    # Check if there are uncommitted changes
-    if ! git diff-index --quiet HEAD --; then
-        echo -e "${YELLOW}⚠️  You have uncommitted changes. Please commit or stash them first.${NC}"
-        git status --short
-        exit 1
-    fi
-    
-    echo -e "${BLUE}🔍 Checking if tag already exists...${NC}"
+    # Check if tag already exists
     if git tag -l | grep -q "^$tag$"; then
-        echo -e "${RED}❌ Tag $tag already exists${NC}"
-        exit 1
+        echo -e "${YELLOW}⚠️  Tag $tag already exists${NC}"
+        read -p "Do you want to continue? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Aborting release finish"
+            exit 1
+        fi
     fi
     
+    # Switch to main and merge release
     echo -e "${BLUE}📋 Switching to main branch...${NC}"
     git checkout main
     git pull origin main
     
     echo -e "${BLUE}🔄 Merging release branch to main...${NC}"
-    git merge --no-ff $release_branch -m "Release $version"
+    git merge --no-ff $release_branch -m "Merge release $version into main"
     
+    # Create tag
     echo -e "${BLUE}🏷️  Creating tag $tag...${NC}"
     git tag -a $tag -m "Release $version"
     
+    # Push main and tag
     echo -e "${BLUE}📤 Pushing main and tag to remote...${NC}"
     git push origin main
     git push origin $tag
     
+    # Note: GitHub release will be created by the workflow
+    echo -e "${BLUE}📝 Note: GitHub release will be created automatically by the workflow${NC}"
+    
+    # Switch to develop and merge release
     echo -e "${BLUE}📋 Switching to develop branch...${NC}"
     git checkout develop
     git pull origin develop
@@ -164,11 +171,12 @@ finish_release() {
     echo -e "${BLUE}🎉 What was accomplished:${NC}"
     echo "   ✅ Release branch merged to main"
     echo "   ✅ Tag $tag created and pushed"
+    echo "   ✅ GitHub release will be created by workflow"
     echo "   ✅ Release branch merged to develop"
     echo "   ✅ Release branch cleaned up"
     echo ""
     echo -e "${BLUE}📚 Next steps:${NC}"
-    echo "   1. Create GitHub Release from tag $tag"
+    echo "   1. Wait for workflow to create GitHub release"
     echo "   2. Deploy to production"
     echo "   3. Announce the release"
 }
