@@ -86,7 +86,13 @@ class RealArduinoInterface : public ArduinoInterface
    // Pin control
    void digitalWrite(uint8_t pin, uint8_t state) override
    {
+#ifdef ARDUINO_ARCH_RENESAS
+      // UNO R4 Minima uses PinStatus enum
+      ::digitalWrite(pin, static_cast<PinStatus>(state));
+#else
+      // Classic Arduino (AVR) uses uint8_t
       ::digitalWrite(pin, state);
+#endif
    }
 
    uint8_t digitalRead(uint8_t pin) const override
@@ -96,7 +102,13 @@ class RealArduinoInterface : public ArduinoInterface
 
    void pinMode(uint8_t pin, uint8_t mode) override
    {
+#ifdef ARDUINO_ARCH_RENESAS
+      // UNO R4 Minima uses PinMode enum
+      ::pinMode(pin, static_cast<PinMode>(mode));
+#else
+      // Classic Arduino (AVR) uses uint8_t
       ::pinMode(pin, mode);
+#endif
    }
 
    // Time functions
