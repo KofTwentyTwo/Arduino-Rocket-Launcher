@@ -218,8 +218,8 @@ jobs:
           ./code/RocketLauncher/out/simulide/firmware.elf
         retention-days: 90
 
-  build-hardware:
-    name: Build Hardware Firmware
+  build-uno-r3:
+    name: Build Arduino UNO R3 Firmware
     runs-on: ubuntu-latest
     needs: [version, cmake-build, test]
     
@@ -247,24 +247,67 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pio-
           
-    - name: Build Hardware Firmware
+    - name: Build UNO R3 Firmware
       working-directory: ./code/RocketLauncher
       run: |
         pio run -e uno_hw
         
-    - name: Upload hardware firmware
+    - name: Upload UNO R3 firmware
       uses: actions/upload-artifact@v4
       with:
-        name: hardware-firmware
+        name: uno-r3-firmware
         path: |
           ./code/RocketLauncher/.pio/build/uno_hw/firmware.hex
           ./code/RocketLauncher/.pio/build/uno_hw/firmware.elf
         retention-days: 90
 
+  build-uno-r4-minima:
+    name: Build Arduino UNO R4 Minima Firmware
+    runs-on: ubuntu-latest
+    needs: [version, cmake-build, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio==${{ env.PLATFORMIO_VERSION }}
+        
+    - name: Cache PlatformIO packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio
+          ~/.cache/pip
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+          
+    - name: Build UNO R4 Minima Firmware
+      working-directory: ./code/RocketLauncher
+      run: |
+        pio run -e uno_r4_minima
+        
+    - name: Upload UNO R4 Minima firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: uno-r4-minima-firmware
+        path: |
+          ./code/RocketLauncher/.pio/build/uno_r4_minima/firmware.bin
+          ./code/RocketLauncher/.pio/build/uno_r4_minima/firmware.elf
+        retention-days: 90
+
   create-tag:
     name: Create Git Tag
     runs-on: ubuntu-latest
-    needs: [version, build-simulation, build-hardware]
+    needs: [version, build-simulation, build-uno-r3, build-uno-r4-minima]
     if: ${{ needs.version.outputs.is-release == 'true' }}
     outputs:
       tag: ${{ needs.version.outputs.tag }}
@@ -345,12 +388,14 @@ jobs:
           
           ### Downloads
           - **Simulation Firmware**: For SimulIDE testing
-          - **Hardware Firmware**: For Arduino upload
+          - **Arduino UNO R3 Firmware**: For classic Arduino compatibility
+          - **Arduino UNO R4 Minima Firmware**: For modern ARM-based Arduino
           
           ### Installation
-          1. Download the appropriate firmware file
-          2. For Arduino: Use Arduino IDE or PlatformIO to upload
-          3. For SimulIDE: Load the wiring file and firmware will auto-load
+          1. Download the appropriate firmware file for your board
+          2. For Arduino UNO R3: Use Arduino IDE or PlatformIO to upload .hex file
+          3. For Arduino UNO R4 Minima: Use Arduino IDE or PlatformIO to upload .bin file
+          4. For SimulIDE: Load the wiring file and firmware will auto-load
           
           ### Build Information
           - **Version**: ${{ needs.version.outputs.version }}
@@ -380,7 +425,7 @@ jobs:
   create-release:
     name: Create Release Assets
     runs-on: ubuntu-latest
-    needs: [version, build-simulation, build-hardware, create-tag]
+    needs: [version, build-simulation, build-uno-r3, build-uno-r4-minima, create-tag]
     if: ${{ needs.version.outputs.is-release == 'true' }}
     
     steps:
@@ -394,13 +439,15 @@ jobs:
         
     - name: Create release package
       run: |
-        mkdir -p release/firmware/hardware
+        mkdir -p release/firmware/uno-r3
+        mkdir -p release/firmware/uno-r4-minima
         mkdir -p release/firmware/simulide
         mkdir -p release/3dprints
         mkdir -p release/simulide
         
         # Copy firmware files to proper directories
-        cp -r artifacts/hardware-firmware/* release/firmware/hardware/
+        cp -r artifacts/uno-r3-firmware/* release/firmware/uno-r3/
+        cp -r artifacts/uno-r4-minima-firmware/* release/firmware/uno-r4-minima/
         cp -r artifacts/simulation-firmware/* release/firmware/simulide/
         
         # Copy 3D print files (if they exist)
@@ -421,7 +468,8 @@ jobs:
         
         ```
         ├── firmware/
-        │   ├── hardware/          # Arduino UNO firmware files
+        │   ├── uno-r3/            # Arduino UNO R3 (ATmega328P) firmware
+        │   ├── uno-r4-minima/     # Arduino UNO R4 Minima (Renesas RA4M1) firmware
         │   └── simulide/          # SimulIDE simulation firmware
         ├── 3dprints/              # 3D printable parts (SLA files)
         ├── simulide/              # SimulIDE wiring files (.sim1)
@@ -430,9 +478,13 @@ jobs:
         
         ## 🚀 Firmware Files
         
-        ### Hardware (Arduino UNO)
-        - `firmware/hardware/firmware.hex` - Hex file for Arduino upload
-        - `firmware/hardware/firmware.elf` - ELF file for debugging
+        ### Arduino UNO R3 (ATmega328P)
+        - `firmware/uno-r3/firmware.hex` - Hex file for Arduino UNO R3 upload
+        - `firmware/uno-r3/firmware.elf` - ELF file for debugging
+        
+        ### Arduino UNO R4 Minima (Renesas RA4M1)
+        - `firmware/uno-r4-minima/firmware.bin` - Binary file for Arduino UNO R4 Minima upload
+        - `firmware/uno-r4-minima/firmware.elf` - ELF file for debugging
         
         ### Simulation (SimulIDE)
         - `firmware/simulide/firmware.hex` - Hex file for SimulIDE simulation
@@ -452,10 +504,15 @@ jobs:
         
         ## 📋 Installation
         
-        ### For Hardware
+        ### For Arduino UNO R3
         1. Download the package
-        2. Use Arduino IDE or PlatformIO to upload `firmware/hardware/firmware.hex`
-        3. Or use `./scripts/build.sh upload` from the project directory
+        2. Use Arduino IDE or PlatformIO to upload `firmware/uno-r3/firmware.hex`
+        3. Or use `./scripts/build.sh board uno_hw && ./scripts/build.sh upload` from the project directory
+        
+        ### For Arduino UNO R4 Minima
+        1. Download the package
+        2. Use Arduino IDE or PlatformIO to upload `firmware/uno-r4-minima/firmware.bin`
+        3. Or use `./scripts/build.sh board uno_r4_minima && ./scripts/build.sh upload` from the project directory
         
         ### For Simulation
         1. Download the package
@@ -495,7 +552,7 @@ jobs:
   build-status:
     name: Build Status Report
     runs-on: ubuntu-latest
-    needs: [cmake-build, test, build-simulation, build-hardware]
+    needs: [cmake-build, test, build-simulation, build-uno-r3, build-uno-r4-minima]
     if: always()
     
     steps:
@@ -529,10 +586,16 @@ jobs:
           echo "❌ **Simulation Build:** FAILED" >> $GITHUB_STEP_SUMMARY
         fi
         
-        if [ "${{ needs.build-hardware.result }}" == "success" ]; then
-          echo "✅ **Hardware Build:** SUCCESS" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.build-uno-r3.result }}" == "success" ]; then
+          echo "✅ **UNO R3 Build:** SUCCESS" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ **Hardware Build:** FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **UNO R3 Build:** FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.build-uno-r4-minima.result }}" == "success" ]; then
+          echo "✅ **UNO R4 Minima Build:** SUCCESS" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **UNO R4 Minima Build:** FAILED" >> $GITHUB_STEP_SUMMARY
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -542,7 +605,7 @@ jobs:
   publish-package:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
-    needs: [version, build-simulation, build-hardware, create-tag]
+    needs: [version, build-simulation, build-uno-r3, build-uno-r4-minima, create-tag]
     if: ${{ needs.version.outputs.is-release == 'true' }}
     
     steps:
@@ -556,13 +619,15 @@ jobs:
         
     - name: Create package manifest
       run: |
-        mkdir -p package/firmware/hardware
+        mkdir -p package/firmware/uno-r3
+        mkdir -p package/firmware/uno-r4-minima
         mkdir -p package/firmware/simulide
         mkdir -p package/3dprints
         mkdir -p package/simulide
         
         # Copy firmware files to proper directories
-        cp -r artifacts/hardware-firmware/* package/firmware/hardware/
+        cp -r artifacts/uno-r3-firmware/* package/firmware/uno-r3/
+        cp -r artifacts/uno-r4-minima-firmware/* package/firmware/uno-r4-minima/
         cp -r artifacts/simulation-firmware/* package/firmware/simulide/
         
         # Copy 3D print files (if they exist)
@@ -580,10 +645,11 @@ jobs:
         {
           "name": "lukes-rocket-launcher-firmware",
           "version": "${{ needs.version.outputs.version }}",
-          "description": "Arduino firmware for Luke's Rocket Launch Controller",
-          "main": "firmware/hardware/firmware.hex",
+          "description": "Multi-board Arduino firmware for Luke's Rocket Launch Controller (UNO R3, UNO R4 Minima, SimulIDE)",
+          "main": "firmware/uno-r3/firmware.hex",
           "files": [
             "firmware/**/*.hex",
+            "firmware/**/*.bin",
             "firmware/**/*.elf",
             "3dprints/**/*",
             "simulide/**/*.sim1",
@@ -595,13 +661,16 @@ jobs:
           },
           "keywords": [
             "arduino",
+            "arduino-uno-r3",
+            "arduino-uno-r4-minima",
             "rocket",
             "launcher",
             "firmware",
             "simulide",
             "3d-printing",
             "cmake",
-            "platformio"
+            "platformio",
+            "multi-board"
           ],
           "author": "KofTwentyTwo",
           "license": "MIT",
@@ -620,7 +689,8 @@ jobs:
         
         \`\`\`
         ├── firmware/
-        │   ├── hardware/          # Arduino UNO firmware files
+        │   ├── uno-r3/            # Arduino UNO R3 (ATmega328P) firmware
+        │   ├── uno-r4-minima/     # Arduino UNO R4 Minima (Renesas RA4M1) firmware
         │   └── simulide/          # SimulIDE simulation firmware
         ├── 3dprints/              # 3D printable parts (SLA files)
         ├── simulide/              # SimulIDE wiring files (.sim1)
@@ -629,9 +699,13 @@ jobs:
         
         ## 🚀 Firmware Files
         
-        ### Hardware (Arduino UNO)
-        - \`firmware/hardware/firmware.hex\` - Hex file for Arduino upload
-        - \`firmware/hardware/firmware.elf\` - ELF file for debugging
+        ### Arduino UNO R3 (ATmega328P)
+        - \`firmware/uno-r3/firmware.hex\` - Hex file for Arduino UNO R3 upload
+        - \`firmware/uno-r3/firmware.elf\` - ELF file for debugging
+        
+        ### Arduino UNO R4 Minima (Renesas RA4M1)
+        - \`firmware/uno-r4-minima/firmware.bin\` - Binary file for Arduino UNO R4 Minima upload
+        - \`firmware/uno-r4-minima/firmware.elf\` - ELF file for debugging
         
         ### Simulation (SimulIDE)
         - \`firmware/simulide/firmware.hex\` - Hex file for SimulIDE simulation
@@ -651,10 +725,15 @@ jobs:
         
         ## 📋 Installation
         
-        ### For Hardware
+        ### For Arduino UNO R3
         1. Download the package
-        2. Use Arduino IDE or PlatformIO to upload \`firmware/hardware/firmware.hex\`
-        3. Or use \`./scripts/build.sh upload\` from the project directory
+        2. Use Arduino IDE or PlatformIO to upload \`firmware/uno-r3/firmware.hex\`
+        3. Or use \`./scripts/build.sh board uno_hw && ./scripts/build.sh upload\` from the project directory
+        
+        ### For Arduino UNO R4 Minima
+        1. Download the package
+        2. Use Arduino IDE or PlatformIO to upload \`firmware/uno-r4-minima/firmware.bin\`
+        3. Or use \`./scripts/build.sh board uno_r4_minima && ./scripts/build.sh upload\` from the project directory
         
         ### For Simulation
         1. Download the package
