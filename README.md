@@ -152,6 +152,93 @@ The project now includes comprehensive unit testing:
    pio lib install "thomasfredericks/Bounce2"
    ```
 
+## 🎯 **Multi-Board Support** 🎯
+
+This project now supports multiple Arduino boards, allowing you to choose your target hardware:
+
+#### **Supported Boards**
+- **Arduino UNO R3** (ATmega328P) - Classic Arduino compatibility
+- **Arduino UNO R4 Minima** (Renesas RA4M1) - Modern 32-bit ARM architecture  
+- **Simulation Environment** - Safe testing without hardware
+
+#### **Quick Board Selection**
+```bash
+# Select your target board interactively
+./scripts/build.sh configure
+
+# Change board selection anytime
+./scripts/build.sh board
+
+# Quick board selection by name
+./scripts/build.sh board uno_hw        # Arduino UNO R3
+./scripts/build.sh board uno_r4_minima # Arduino UNO R4 Minima
+./scripts/build.sh board simulide      # Simulation
+
+# Show current board
+./scripts/build.sh status
+```
+
+#### **Board-Specific Workflows**
+```bash
+# After selecting board with ./scripts/build.sh configure:
+./scripts/build.sh firmware    # Builds for selected board
+./scripts/build.sh upload      # Uploads to selected board
+./scripts/build.sh monitor     # Monitors selected board
+
+# All commands automatically use your selected board
+```
+
+### **What This Means for Developers** 🚀
+
+✅ **Easy Board Switching** - Interactive selection during configuration  
+✅ **Persistent Configuration** - Board selection saved in config file  
+✅ **Identical Functionality** - Your rocket controller works the same on all boards  
+✅ **Future-Proof** - Support for both classic and modern Arduino hardware  
+✅ **Safe Development** - Test in simulation before using real hardware  
+✅ **Professional Workflow** - Industry-standard multi-platform development  
+
+### **Documentation & Tools** 📚
+
+- **`./scripts/build.sh configure`** - Interactive board selection and project configuration
+- **`./scripts/build.sh board`** - Change board selection anytime
+- **`MULTI_BOARD_TESTING.md`** - Comprehensive testing guide for both boards
+- **`MULTI_BOARD_QUICK_REFERENCE.md`** - Quick reference for daily development
+- **Enhanced build script** - Board-aware building, uploading, and monitoring
+
+### **Example Development Workflow**
+
+```bash
+# 1. Start with simulation (safe testing)
+./scripts/build.sh configure    # Select simulide
+./scripts/build.sh sim
+
+# 2. Test on UNO R3 (classic hardware)
+./scripts/build.sh board uno_hw
+./scripts/build.sh firmware
+./scripts/build.sh upload
+./scripts/build.sh monitor
+
+# 3. Test on UNO R4 Minima (modern hardware)
+./scripts/build.sh board uno_r4_minima
+./scripts/build.sh firmware
+./scripts/build.sh upload
+./scripts/build.sh monitor
+
+# 4. Compare behavior across platforms
+# All boards should provide identical functionality
+```
+
+This approach ensures your rocket controller works reliably on both classic and modern Arduino hardware!
+
+### **Getting Started with Multi-Board** 🎯
+
+1. **Configure and select board**: `./scripts/build.sh configure`
+2. **Build and test**: `./scripts/build.sh firmware`
+3. **Verify functionality**: `./scripts/build.sh upload` and `./scripts/build.sh monitor`
+4. **Change boards anytime**: `./scripts/build.sh board uno_hw` for new selection
+
+This multi-board support ensures your rocket controller works reliably whether you're using classic Arduino hardware or modern ARM architecture!
+
 ### **Building & Testing** 🧪
 The project now includes a comprehensive build system with automated testing and simulation!
 
@@ -171,10 +258,10 @@ The project now includes a comprehensive build system with automated testing and
 # ⚡ Build hardware firmware only
 ./scripts/build.sh firmware-hw
 
-# 📤 Upload to Arduino
+# 📤 Upload to Arduino (uses current board selection)
 ./scripts/build.sh upload
 
-# 📡 Monitor serial output
+# 📡 Monitor serial output (uses current board selection)
 ./scripts/build.sh monitor
 
 # 🎨 Format code
@@ -187,7 +274,7 @@ The project now includes a comprehensive build system with automated testing and
 ./scripts/build.sh help
 ```
 
-**Why the new build system?** We've added comprehensive unit testing and automated builds to ensure reliability and make development easier!
+**Why the new build system?** We've added comprehensive unit testing, automated builds, and **multi-board support** to ensure reliability and make development easier across different Arduino platforms!
 
 ### **Build System Benefits** 🎯
 - **🚀 One Command**: `./scripts/build.sh sim` builds and launches simulator
@@ -197,6 +284,15 @@ The project now includes a comprehensive build system with automated testing and
 - **📱 Cross-Platform**: Works on macOS, Linux, and Windows
 - **🎨 Code Quality**: Automatic formatting and style checking
 - **📊 Status Monitoring**: Easy to see what's working and what needs attention
+- **🎯 Multi-Board Support**: Easy switching between Arduino UNO R3, UNO R4 Minima, and simulation
+
+### **Multi-Board Development Workflow** 🔄
+1. **Start with simulation** - Test safely without hardware
+2. **Test on UNO R3** - Verify classic Arduino compatibility
+3. **Test on UNO R4 Minima** - Verify modern ARM compatibility
+4. **Compare behavior** - Ensure identical functionality across platforms
+
+This approach ensures your rocket controller works reliably on both classic and modern Arduino hardware!
 
 ### **Simulation** (Test Before You Test!)
 The project includes SimulIDE simulation files with **automatic launch**:

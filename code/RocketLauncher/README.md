@@ -17,6 +17,145 @@ This project uses a **hybrid build approach** that gives you the best of both wo
 - **Multiple build configurations** - Presets for different use cases
 - **Modern C++ standards** - C++17 support with proper toolchain
 - **Maintainable architecture** - Standard CMake practices
+- **Multi-board support** - Arduino UNO R3, UNO R4 Minima, and simulation
+
+## 🎯 Multi-Board Support
+
+This project supports multiple Arduino boards, allowing you to choose your target hardware at build time.
+
+### Supported Boards
+
+| Board | Platform | MCU | Framework | Upload Protocol |
+|-------|----------|-----|-----------|------------------|
+| **Arduino UNO R3** | `uno_hw` | ATmega328P | Arduino AVR | Serial/USB |
+| **Arduino UNO R4 Minima** | `uno_r4_minima` | Renesas RA4M1 | Arduino Renesas | Serial/USB |
+| **Simulation** | `simulide` | AVR Simulated | Arduino AVR | Custom (SimulIDE) |
+
+### Board Selection
+
+#### **Quick Board Selection**
+```bash
+# Select your target board interactively
+./scripts/build.sh configure
+
+# Change board selection anytime
+./scripts/build.sh board
+
+# Quick board selection by name
+./scripts/build.sh board uno_hw        # Arduino UNO R3
+./scripts/build.sh board uno_r4_minima # Arduino UNO R4 Minima
+./scripts/build.sh board simulide      # Simulation
+
+# Show current board
+./scripts/build.sh status
+```
+
+#### Method 2: PlatformIO Direct Commands
+```bash
+# Build for specific board
+pio run -e uno_hw
+pio run -e uno_r4_minima
+pio run -e simulide
+
+# Upload to specific board
+pio run -e uno_hw -t upload
+pio run -e uno_r4_minima -t upload
+
+# Monitor specific board
+pio device monitor -e uno_hw
+pio device monitor -e uno_r4_minima
+```
+
+#### Method 3: Build Script with Board Selection
+```bash
+# The build script automatically uses your configured board
+./scripts/build.sh firmware    # Builds for current board
+./scripts/build.sh upload      # Uploads to current board
+./scripts/build.sh monitor     # Monitors current board
+
+# All commands respect your board selection
+```
+
+### Board-Specific Features
+
+#### Arduino UNO R3 (ATmega328P)
+- **Classic Arduino compatibility** - Works with all standard Arduino libraries
+- **Proven reliability** - Battle-tested platform for rocketry
+- **Wide library support** - Maximum compatibility with existing code
+- **Lower cost** - More affordable hardware option
+
+#### Arduino UNO R4 Minima (Renesas RA4M1)
+- **Modern architecture** - 32-bit ARM Cortex-M4 processor
+- **Higher performance** - Faster execution and more memory
+- **Enhanced features** - Better analog capabilities and I/O
+- **Future-proof** - Next-generation Arduino platform
+
+#### Simulation Environment
+- **Safe testing** - Test firmware without physical hardware
+- **Fast iteration** - Quick development and debugging cycles
+- **Cost-effective** - No hardware costs during development
+- **Educational** - Great for learning and demonstration
+
+### Board Switching Workflow
+
+1. **Configure your project** - `./scripts/build.sh configure` (selects board)
+2. **Build and test** - `./scripts/build.sh firmware` (uses selected board)
+3. **Change board anytime** - `./scripts/build.sh board` (new selection)
+4. **Verify functionality** - All commands automatically use current board
+
+### Example Development Workflow
+
+```bash
+# 1. Start with simulation (safe testing)
+./scripts/build.sh configure    # Select simulide
+./scripts/build.sh sim
+
+# 2. Test on UNO R3 (classic hardware)
+./scripts/build.sh board        # Select uno_hw
+./scripts/build.sh firmware
+./scripts/build.sh upload
+./scripts/build.sh monitor
+
+# 3. Test on UNO R4 Minima (modern hardware)
+./scripts/build.sh board        # Select uno_r4_minima
+./scripts/build.sh firmware
+./scripts/build.sh upload
+./scripts/build.sh monitor
+
+# 4. Compare behavior across platforms
+# All boards should provide identical functionality
+```
+
+### Troubleshooting Multi-Board Issues
+
+#### Common Problems and Solutions
+
+**Library Compatibility Issues**
+```bash
+# If libraries don't work on a specific board
+pio lib install "library_name" -e uno_hw
+pio lib install "library_name" -e uno_r4_minima
+```
+
+**Upload Failures**
+```bash
+# Check available ports
+pio device list
+
+# Specify exact port
+pio run -e uno_hw -t upload --upload-port /dev/cu.usbmodemXXXX
+```
+
+**Build Errors**
+```bash
+# Clean and rebuild
+pio run -t clean -e uno_hw
+pio run -e uno_hw
+
+# Check board-specific requirements
+pio platform show renesas-ra
+pio platform show atmelavr
+```
 
 ## 📋 Prerequisites
 
@@ -76,7 +215,19 @@ git clone <your-repo-url>
 cd RocketLauncher
 ```
 
-### 2. Build Everything
+### 2. Choose Your Target Board
+```bash
+# For Arduino UNO R3 (classic)
+PIO_ENV=uno_hw ./scripts/build.sh
+
+# For Arduino UNO R4 Minima (modern) - DEFAULT
+./scripts/build.sh
+
+# For simulation only
+PIO_ENV=simulide ./scripts/build.sh sim
+```
+
+### 3. Build Everything
 ```bash
 # Using the build script (recommended)
 ./scripts/build.sh
@@ -86,7 +237,7 @@ cmake --preset default
 cmake --build --preset default
 ```
 
-### 3. Run Tests
+### 4. Run Tests
 ```bash
 ./scripts/build.sh test
 ```
@@ -95,11 +246,16 @@ cmake --build --preset default
 
 ### Using the Build Script (Recommended)
 
-The `scripts/build.sh` script provides a familiar interface:
+The `scripts/build.sh` script provides a familiar interface with multi-board support:
 
 ```bash
-# Full build (configure + build + test)
+# Full build (configure + build + test) - uses default board
 ./scripts/build.sh
+
+# Build for specific board
+PIO_ENV=uno_hw ./scripts/build.sh
+PIO_ENV=uno_r4_minima ./scripts/build.sh
+PIO_ENV=simulide ./scripts/build.sh
 
 # Configure only
 ./scripts/build.sh configure
@@ -113,14 +269,16 @@ The `scripts/build.sh` script provides a familiar interface:
 # Clean build files
 ./scripts/build.sh clean
 
-# Build specific firmware
-./scripts/build.sh firmware-sim    # Simulation firmware
-./scripts/build.sh firmware-hw     # Hardware firmware
-./scripts/build.sh all-firmware    # Both firmwares
+# Build specific firmware for specific board
+PIO_ENV=uno_hw ./scripts/build.sh firmware-hw
+PIO_ENV=uno_r4_minima ./scripts/build.sh firmware-hw
+PIO_ENV=simulide ./scripts/build.sh firmware-sim
 
-# Arduino operations
-./scripts/build.sh upload          # Upload to Arduino
-./scripts/build.sh monitor         # Start serial monitor
+# Arduino operations for specific board
+PIO_ENV=uno_hw ./scripts/build.sh upload
+PIO_ENV=uno_r4_minima ./scripts/build.sh upload
+PIO_ENV=uno_hw ./scripts/build.sh monitor
+PIO_ENV=uno_r4_minima ./scripts/build.sh monitor
 
 # Utilities
 ./scripts/build.sh format          # Format source code
@@ -128,234 +286,60 @@ The `scripts/build.sh` script provides a familiar interface:
 ./scripts/build.sh help            # Get help
 ```
 
+### Using PlatformIO Directly
+
+```bash
+# Build for specific board
+pio run -e uno_hw
+pio run -e uno_r4_minima
+pio run -e simulide
+
+# Upload to specific board
+pio run -e uno_hw -t upload
+pio run -e uno_r4_minima -t upload
+
+# Monitor specific board
+pio device monitor -e uno_hw
+pio device monitor -e uno_r4_minima
+
+# Clean specific environment
+pio run -t clean -e uno_hw
+pio run -t clean -e uno_r4_minima
+```
+
 ### Using CMake Directly
 
-```bash
-# Configure with default preset
-cmake --preset default
-
-# Build with default preset
-cmake --build --preset default
-
-# Run tests
-ctest --preset default
-
-# Build specific targets
-cmake --build . --target firmware_sim
-cmake --build . --target firmware_hw
-cmake --build . --target rocket_tests
+```
 ```
 
-## ⚙️ Build Presets
+### **Documentation & Tools** 📚
 
-The project includes several pre-configured build presets:
+- **`./scripts/build.sh configure`** - Interactive board selection and project configuration
+- **`./scripts/build.sh board`** - Change board selection anytime
+- **`./scripts/build.sh board 1-3`** - Quick board selection by number
+- **`MULTI_BOARD_TESTING.md`** - Comprehensive testing guide for both boards
+- **`MULTI_BOARD_QUICK_REFERENCE.md`** - Quick reference for daily development
+- **Enhanced build script** - Board-aware building, uploading, and monitoring
 
-| Preset | Description | Tests | PlatformIO | Optimization |
-|--------|-------------|-------|------------|--------------|
-| `default` | Full development build | ✅ | ✅ | Debug |
-| `release` | Production build | ❌ | ✅ | Release |
-| `tests-only` | Unit tests only | ✅ | ❌ | Debug |
-| `minimal` | Minimal build | ❌ | ❌ | Debug |
+### **Zsh Autocomplete** ⌨️
 
-### Using Presets
+For enhanced productivity, install zsh autocomplete:
 
 ```bash
-# Configure with specific preset
-cmake --preset release
+# Install autocomplete
+./scripts/setup-autocomplete.sh install
 
-# Build with specific preset
-cmake --build --preset tests-only
+# Check status
+./scripts/setup-autocomplete.sh status
 
-# Using build script with preset
-./scripts/build.sh --preset release
+# Remove if needed
+./scripts/setup-autocomplete.sh uninstall
 ```
 
-## 📁 Project Structure
+**Features:**
+- Tab completion for all build commands
+- Board selection autocomplete
+- Preset selection autocomplete
+- Works with: `build.sh`, `./scripts/build.sh`, `./build.sh`
 
-```
-RocketLauncher/
-├── CMakeLists.txt              # Main CMake configuration
-├── CMakePresets.json           # Build presets for CLion
-├── platformio.ini              # PlatformIO configuration
-├── cmake/                      # CMake modules
-│   └── FindUnity.cmake        # Unity test framework finder
-├── lib/Unity/                  # Unity test framework
-│   ├── unity.h                 # Test framework header
-│   └── unity.cpp               # Test framework implementation
-├── scripts/                    # Build helper scripts
-│   └── build.sh                # Main build script
-├── src/                        # Source code
-│   ├── main.cpp                # Arduino main program
-│   ├── RocketController.cpp    # Rocket control logic
-│   ├── RocketController.h      # Rocket control interface
-│   └── ArduinoInterface.h      # Arduino abstraction
-├── test/                       # Unit tests
-│   └── test_rocket_controller.cpp
-├── lib/                        # External libraries
-├── include/                    # Header files
-└── .vscode/                    # VS Code configuration
-    └── settings.json          # Editor settings
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-- `ARDUINO_HOME` - Path to Arduino installation (optional, auto-detected)
-
-### CMake Options
-
-```bash
-# Configure with custom options
-cmake -DBUILD_TESTS=OFF -DPLATFORMIO_INTEGRATION=OFF ..
-
-# Available options:
-# BUILD_TESTS          - Enable/disable unit tests (default: ON)
-# PLATFORMIO_INTEGRATION - Enable/disable PlatformIO integration (default: ON)
-# ENABLE_FORMATTING    - Enable/disable code formatting (default: ON)
-```
-
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-./scripts/build.sh test
-
-# Run tests with verbose output
-ctest --preset default --output-on-failure
-
-# Run specific test
-ctest --preset default -R RocketControllerTests
-```
-
-### Test Framework
-
-The project uses the **Unity test framework** for unit testing. Tests are automatically discovered and run during the build process.
-
-## 📱 Arduino Development
-
-### Building Firmware
-
-```bash
-# Build for Arduino Uno
-./scripts/build.sh firmware-hw
-
-# Build for simulation
-./scripts/build.sh firmware-sim
-
-# Build both
-./scripts/build.sh all-firmware
-```
-
-### Uploading to Arduino
-
-```bash
-# Upload hardware firmware (requires Arduino connection)
-./scripts/build.sh upload
-```
-
-**Note**: Upload functionality requires proper Arduino connection and may need configuration for your specific setup.
-
-### Arduino Libraries
-
-The project automatically includes these Arduino libraries via PlatformIO:
-- `LiquidCrystal` - LCD display support
-- `Bounce2` - Button debouncing
-
-## 🎮 Simulation
-
-### SimulIDE Integration
-
-The simulation build creates firmware compatible with SimulIDE:
-
-1. Build simulation firmware: `./scripts/build.sh firmware-sim`
-2. Open SimulIDE
-3. Load your simulation file (`.sim1`)
-4. Firmware will auto-load from the PlatformIO build output
-
-## 🚀 Migration from Makefile
-
-### Old Makefile Commands → New CMake Commands
-
-| Old Makefile | New CMake | Description |
-|--------------|-----------|-------------|
-| `make all` | `./scripts/build.sh` | Full build |
-| `make build-only` | `./scripts/build.sh build` | Build only |
-| `make test` | `./scripts/build.sh test` | Run tests |
-| `make clean` | `./scripts/build.sh clean` | Clean build |
-| `make build-sim` | `./scripts/build.sh firmware-sim` | Simulation build |
-| `make build-hw` | `./scripts/build.sh firmware-hw` | Hardware build |
-| `make upload` | `./scripts/build.sh upload` | Upload to Arduino |
-| `make format` | `./scripts/build.sh format` | Format code |
-| `make status` | `./scripts/build.sh status` | Show status |
-
-### Key Benefits of CMake
-
-1. **Cross-platform**: Works on macOS, Linux, and Windows
-2. **IDE integration**: Better support in CLion, VS Code, etc.
-3. **Presets**: Multiple build configurations without reconfiguration
-4. **Modular**: Reusable build components
-5. **Standards**: Follows modern C++ build practices
-6. **Maintainable**: Easier to extend and modify
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-#### CMake not found
-```bash
-# Install CMake
-# macOS
-brew install cmake
-
-# Ubuntu
-sudo apt install cmake
-
-# Windows
-# Download from cmake.org
-```
-
-#### PlatformIO not found
-```bash
-# Install PlatformIO
-pip install platformio
-```
-
-#### Build failures
-```bash
-# Clean and rebuild
-./scripts/build.sh clean
-./scripts/build.sh
-
-# Check dependencies
-./scripts/build.sh status
-```
-
-### Getting Help
-
-1. Check the project status: `./scripts/build.sh status`
-2. Verify dependencies are installed
-3. Check build logs in the build directory
-4. Ensure you're using CMake 3.20+
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with: `./scripts/build.sh test`
-5. Submit a pull request
-
-## 📄 License
-
-[Your License Here]
-
-## 🙏 Acknowledgments
-
-- **Luke** - Original rocket launcher design
-- **Arduino community** - Hardware platform
-- **PlatformIO community** - Arduino development tools
-- **CMake community** - Build system
-- **Unity framework** - Testing framework
+### **Getting Started with Multi-Board** 🎯
